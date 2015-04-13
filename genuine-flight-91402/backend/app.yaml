@@ -5,7 +5,7 @@ threadsafe: true
 
 handlers:
 - url: /.*
-  script: expensestracker.app
+  script: processpayment.app
 
 libraries:
 - name: webapp2
