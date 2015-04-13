@@ -18,43 +18,79 @@
     <![endif]-->
   </head>
   <body>
-    <div class="panel panel-primary">
-      <div class="panel panel-default">
-        <div class="panel-heading">Expenses Details</div>
-          <div class="panel-body">
-            <!-- Paid by -->
-            <div class="dropdown">
-              <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-                Dropdown
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Action</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Another action</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Something else here</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Separated link</a></li>
-              </ul>
-            </div>
 
-            <div class="input-group">
-              <span class="input-group-addon" id="basic-addon1">Paid by</span>
-              <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1">
-            </div>
-
-            <div class="input-group">
-              <span class="input-group-addon" id="basic-addon1">Details</span>
-              <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1">
-            </div>
-
-            <div class="input-group">
-              <span class="input-group-addon">$</span>
-              <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
-              <span class="input-group-addon">.00</span>
-            </div>
-          
-          </div>
-        </div>
+<form class="form-horizontal">
+  <!-- Paid by -->
+  <div class="form-group">
+    <label for="paidBy" class="col-sm-1 control-label">Paid by</label>
+    <div class="col-sm-10">
+      <label class="radio-inline">
+        <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> Kai
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> Keen
+      </label>
     </div>
+  </div>
+
+  <!-- Details -->
+  <div class="form-group">
+    <label for="paymentDetails" class="col-sm-1 control-label">Details</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="paymentDetails" placeholder="Amount">
+    </div>
+  </div>
+
+  <!-- Amount -->
+  <div class="form-group">
+    <label for="inputAmount" class="col-sm-1 control-label">Amount</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control" id="inputAmount" placeholder="Amount">
+    </div>
+  </div>
+
+  <!-- Shared equally? -->
+  <div class="form-group">
+    <div class="col-sm-offset-1 col-sm-10">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox"> Shared equally
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Split amount -->
+  <div id="splitAmount">
+    <!-- Kai amount -->
+    <div class="form-group">
+      <label for="kaiAmount" class="col-sm-1 control-label">Kai</label>
+      <div class="col-sm-10">
+        <div class="input-group">
+          <div class="input-group-addon">$</div>
+          <input type="text" class="form-control" id="kaiAmount" placeholder="Amount">
+        </div>
+      </div>
+    </div>
+    <!-- Keen amount -->
+    <div class="form-group">
+      <label for="keenAmount" class="col-sm-1 control-label">Keen</label>
+      <div class="col-sm-10">
+        <div class="input-group">
+          <div class="input-group-addon">$</div>
+          <input type="text" class="form-control" id="keenAmount" placeholder="Amount">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="form-group">
+    <div class="col-sm-offset-1 col-sm-10">
+      <button type="submit" class="btn btn-default">Submit</button>
+    </div>
+  </div>
+</form>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
