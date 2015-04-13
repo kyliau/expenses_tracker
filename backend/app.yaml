@@ -6,3 +6,7 @@ threadsafe: true
 handlers:
 - url: /.*
   script: expensestracker.app
+
+libraries:
+- name: webapp2
+  version: latest
