@@ -25,10 +25,10 @@
     <label for="paidBy" class="col-sm-1 control-label">Paid by</label>
     <div class="col-sm-10">
       <label class="radio-inline">
-        <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> Kai
+        <input type="radio" name="payer" id="inlineRadio1" value="Kai" checked> Kai
       </label>
       <label class="radio-inline">
-        <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> Keen
+        <input type="radio" name="payer" id="inlineRadio2" value="Keen"> Keen
       </label>
     </div>
   </div>
@@ -37,7 +37,7 @@
   <div class="form-group">
     <label for="paymentDetails" class="col-sm-1 control-label">Details</label>
     <div class="col-sm-10">
-      <input type="text" class="form-control" id="paymentDetails" placeholder="Amount">
+      <input type="text" class="form-control" id="paymentDetails" placeholder="Payment details" required>
     </div>
   </div>
 
@@ -45,7 +45,7 @@
   <div class="form-group">
     <label for="inputAmount" class="col-sm-1 control-label">Amount</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control" id="inputAmount" placeholder="Amount">
+      <input type="number" class="form-control" id="inputAmount" placeholder="Total Amount" required>
     </div>
   </div>
 
@@ -54,7 +54,7 @@
     <div class="col-sm-offset-1 col-sm-10">
       <div class="checkbox">
         <label>
-          <input type="checkbox"> Shared equally
+          <input type="checkbox" id="sharedEqually"> Shared equally
         </label>
       </div>
     </div>
@@ -68,7 +68,7 @@
       <div class="col-sm-10">
         <div class="input-group">
           <div class="input-group-addon">$</div>
-          <input type="text" class="form-control" id="kaiAmount" placeholder="Amount">
+          <input type="text" class="form-control" id="kaiAmount" placeholder="Kai's Amount">
         </div>
       </div>
     </div>
@@ -78,7 +78,7 @@
       <div class="col-sm-10">
         <div class="input-group">
           <div class="input-group-addon">$</div>
-          <input type="text" class="form-control" id="keenAmount" placeholder="Amount">
+          <input type="text" class="form-control" id="keenAmount" placeholder="Keen's Amount">
         </div>
       </div>
     </div>
@@ -96,5 +96,42 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="bootstrap/js/bootstrap.min.js"></script>
+
+    <script>
+      $(document).ready(function() {
+
+        $("#sharedEqually").click(function() {
+          if (this.checked) {
+            $("#splitAmount").slideUp();
+            var amount = $("#inputAmount").val();
+            $("#kaiAmount").val(amount / 2);
+            $("#keenAmount").val(amount / 2);
+          } else {
+            $("#splitAmount").slideDown();
+          }
+        });
+
+        $("form").submit(function(event) {
+          event.preventDefault();
+          console.log("Submit button clicked!");
+          var transactionData = {
+            paidBy     : $("input[name=payer]:checked").val(),
+            details    : $("#paymentDetails").val(),
+            amount     : $("#inputAmount").val(),
+            kaiAmount  : $("#kaiAmount").val(),
+            keenAmount : $("#keenAmount").val()
+          };
+          console.log(transactionData);
+          $.ajax({
+            type: "POST",
+            url: "/processpayment",
+            data: transactionData
+          }).done(function(data) {
+            alert(data);
+          });
+        })
+
+      });
+    </script>
   </body>
 </html>
