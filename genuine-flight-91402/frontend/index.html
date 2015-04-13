@@ -124,7 +124,7 @@
           console.log(transactionData);
           $.ajax({
             type: "POST",
-            url: "/processpayment",
+            url: "/",
             data: transactionData
           }).done(function(data) {
             alert(data);

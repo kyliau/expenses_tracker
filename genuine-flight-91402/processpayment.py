@@ -18,8 +18,8 @@ class Expense(ndb.Model):
 	date = ndb.DateTimeProperty(auto_now_add=True)
 	details = ndb.StringProperty(indexed=False)
 	amount = ndb.FloatProperty(indexed=False)
-	amountKai = ndb.FloatProperty(indexed=False)
-	amountKeen = ndb.FloatProperty(indexed=False)
+	kaiAmount = ndb.FloatProperty(indexed=False)
+	keenAmount = ndb.FloatProperty(indexed=False)
 	paidBy = ndb.StringProperty(indexed=False)
 
 class ExpenseEntry:
@@ -31,13 +31,18 @@ class ExpenseEntry:
 class MainPage(webapp2.RequestHandler):
 
     def post(self):
+
+        print self.request
+
         expense = Expense(parent=expense_key(DEFAULT_EXPENSE))
         expense.details = self.request.get('details')
-        expense.amount = self.request.get('amount', 0)
-        expense.amountKai = self.request.get('amountKai', 0)
-        expense.amountKeen = self.request.get('amountKeen', 0)
+        expense.amount = float(self.request.get('amount', 0))
+        expense.kaiAmount = float(self.request.get('kaiAmount', 0))
+        expense.keenAmount = float(self.request.get('keenAmount', 0))
         expense.paidBy = self.request.get('paidBy')
         expense.put()
+
+        self.response.write("Successfully added expense!")
 
     def get(self):
         expenses_query = Expense.query(
