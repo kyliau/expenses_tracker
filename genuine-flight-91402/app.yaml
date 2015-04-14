@@ -2,7 +2,7 @@ application: genuine-flight-91402
 version: 1
 runtime: python27
 api_version: 1
-threadsafe: yes
+threadsafe: false
 
 handlers:
 - url: /favicon\.ico
@@ -10,7 +10,7 @@ handlers:
   upload: favicon\.ico
 
 - url: /processpayment
-  script: processpayment.app
+  script: processpayment.py
 
 - url: /
   static_dir: frontend
