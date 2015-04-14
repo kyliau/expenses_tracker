@@ -128,7 +128,12 @@
             data: transactionData
           }).done(function(data) {
             alert(data);
-          });
+          }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.log("ajax failed");
+            console.log("jqXHR = " + jqXHR);
+            console.log("textStatus = " + textStatus);
+            console.log("errorThrown = " + errorThrown);
+          });;
         })
 
       });
