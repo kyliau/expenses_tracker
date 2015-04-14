@@ -9,10 +9,10 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: /
+- url: /processpayment
   script: processpayment.app
 
-- url: /ui
+- url: /
   static_dir: frontend
 
 libraries:

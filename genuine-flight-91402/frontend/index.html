@@ -45,7 +45,7 @@
   <div class="form-group">
     <label for="inputAmount" class="col-sm-1 control-label">Amount</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control" id="inputAmount" placeholder="Total Amount" required>
+      <input type="number" class="form-control" id="inputAmount" placeholder="Total Amount" min="0" step="any" required>
     </div>
   </div>
 
@@ -124,7 +124,7 @@
           console.log(transactionData);
           $.ajax({
             type: "POST",
-            url: "/",
+            url: "/processpayment",
             data: transactionData
           }).done(function(data) {
             alert(data);
