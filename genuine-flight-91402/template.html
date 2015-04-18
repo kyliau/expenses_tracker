@@ -63,23 +63,35 @@
             </div>
 
             <!-- Split Equally -->
+            <!--
             <div class="form-group">
                 <button class="btn btn-default" id="splitEqually">Split Equally</button>
             </div>
-
-            <!-- Kai Amount -->
-            <div class="form-group">
-                <div class="input-group">
-                    <div class="input-group-addon"><span class="glyphicon glyphicon-apple" aria-hidden="true"></span></div>
-                    <input type="number" class="form-control" name="kaiAmount" placeholder="Kai's Amount" min='0' step='any' required>
+            <div class="checkbox">
+                <label><input type="checkbox" name="splitEqually" checked> Split Equally</label>
+            </div>
+            -->
+            <div class="form-group"> 
+                <div class="checkbox">
+                    <label><input type="checkbox" id="splitEqually" checked>Split Equally</label>
                 </div>
             </div>
 
-            <!-- Keen Amount -->
-            <div class="form-group">
-                <div class="input-group">
-                    <div class="input-group-addon"><span class="glyphicon glyphicon-plane" aria-hidden="true"></span></div>
-                    <input type="number" class="form-control" name="keenAmount" placeholder="Keen's Amount" min='0' step='any' required>
+            <!-- Kai Amount -->
+            <div id="individualAmount" style="display: none">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon"><span class="glyphicon glyphicon-apple" aria-hidden="true"></span></div>
+                        <input type="number" class="form-control" name="kaiAmount" placeholder="Kai's Amount" min='0' step='any'>
+                    </div>
+                </div>
+
+                <!-- Keen Amount -->
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon"><span class="glyphicon glyphicon-plane" aria-hidden="true"></span></div>
+                        <input type="number" class="form-control" name="keenAmount" placeholder="Keen's Amount" min='0' step='any'>
+                    </div>
                 </div>
             </div>
 
@@ -118,14 +130,21 @@
           var kaiInput    = $('input[name=kaiAmount]');
           var keenInput   = $('input[name=keenAmount]');
 
-        $("#splitEqually").click(function(event) {
+        function calculateAmount() {
             var amount = parseFloat(amountInput.val());
-            if (!isNaN(amount) && amount > 0) {
+            if (isNaN(amount) || amount < 0) {
+                amount = 0;
+            }
+            if ($('#splitEqually').is(':checked')) {
                 kaiInput.val(amount / 2);
                 keenInput.val(amount / 2);
+                $('#individualAmount').slideUp();
+            } else {
+                $('#individualAmount').slideDown();
             }
-            event.preventDefault();
-        });
+        }
+
+        $("#splitEqually").click(calculateAmount);
 
         setTodayDate();
 
@@ -136,7 +155,7 @@
                 event.preventDefault();
                 return;
             }
-
+            calculateAmount();
             var total = parseFloat(amountInput.val());
             var kai   = parseFloat(kaiInput.val());
             var keen  = parseFloat(keenInput.val());
