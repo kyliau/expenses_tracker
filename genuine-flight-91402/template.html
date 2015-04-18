@@ -96,6 +96,20 @@
     <script src="bootstrap/js/bootstrap.min.js"></script>
 
     <script>
+        function setTodayDate() {
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth() + 1;
+            var yyyy = today.getFullYear();
+            if (dd < 10) {
+                dd = '0' + dd;
+            }
+            if (mm < 10) {
+                mm = '0' + mm;
+            }
+            $('input[name=date]').val(yyyy + '-' + mm + '-' + dd);
+        }
+
       $(document).ready(function() {
           var amountInput = $('input[name=amount]');
           var kaiInput    = $('input[name=kaiAmount]');
@@ -103,7 +117,6 @@
 
         $("#splitEqually").click(function(event) {
             var amount = parseFloat(amountInput.val());
-            console.log(amount);
             if (!isNaN(amount) && amount > 0) {
                 kaiInput.val(amount / 2);
                 keenInput.val(amount / 2);
@@ -111,12 +124,21 @@
             event.preventDefault();
         });
 
+        setTodayDate();
+
         $('form').submit(function(event) {
+            var details = $('input[name=details]').val().trim();
+            if (details.length === 0) {
+                alert("Please enter transaction details");
+                event.preventDefault();
+                return;
+            }
+
             var total = parseFloat(amountInput.val());
             var kai   = parseFloat(kaiInput.val());
             var keen  = parseFloat(keenInput.val());
-            if (kai + keen != total) {
-                alert("Kai and Keen amount must add up to " + total);
+            if (isNaN(total) || isNaN(kai) || isNaN(keen) || (kai + keen != total)) {
+                alert("Amount is invalid");
                 event.preventDefault();
             }
         });
