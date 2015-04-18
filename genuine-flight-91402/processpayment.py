@@ -70,14 +70,18 @@ class Admin(webapp2.RequestHandler):
         oweToKai = paidByKai - sharedByKai
         
         message = ''
-        if (oweToKai < 0):
+        alertType = 'alert-info'
+        if abs(oweToKai) < 0.05:
+            message = 'All dues are clear'
+            alertType = 'alert-success'
+        elif oweToKai < 0:
             message = 'Kai owes Keen USD ' + "{:10.2f}".format(abs(oweToKai))
         else:
             message = 'Keen owes Kai USD ' + "{:10.2f}".format(oweToKai)
         print message
 
         template = jinja_environment.get_template('admin.html')
-        self.response.out.write(template.render({'expenses':expenses, 'message':message}))
+        self.response.out.write(template.render({'expenses':expenses, 'alertType':alertType, 'message':message}))
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),

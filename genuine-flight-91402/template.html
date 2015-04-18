@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <title>Expenses Tracker</title>
 
@@ -47,9 +47,7 @@
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon"><span class="glyphicon glyphicon-usd" aria-hidden="true"></span></div>
-                        <input type="number" class="form-control" name="amount" placeholder="Transaction Amount" style="width: 90%" min="0" step="any" required>
-                        <button class="btn btn-default" id="splitEqually" style="width: 10%">Split Equally</button>
-                    <!--<div class="input-group-addon"><input type="checkbox" id="splitEqually"></div>-->
+                    <input type="number" class="form-control" name="amount" placeholder="Amount" min="0" step="any" required>
                 </div>
             </div>
 
@@ -59,6 +57,11 @@
                     <div class="input-group-addon"><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span></div>
                     <input type="date" class="form-control" name="date" placeholder="Transaction Date" required>
                 </div>
+            </div>
+
+            <!-- Split Equally -->
+            <div class="form-group">
+                <button class="btn btn-default" id="splitEqually">Split Equally</button>
             </div>
 
             <!-- Kai Amount -->
@@ -98,13 +101,14 @@
           var kaiInput    = $('input[name=kaiAmount]');
           var keenInput   = $('input[name=keenAmount]');
 
-        $("#splitEqually").click(function() {
+        $("#splitEqually").click(function(event) {
             var amount = parseFloat(amountInput.val());
             console.log(amount);
             if (!isNaN(amount) && amount > 0) {
                 kaiInput.val(amount / 2);
                 keenInput.val(amount / 2);
             }
+            event.preventDefault();
         });
 
         $('form').submit(function(event) {
