@@ -51,13 +51,13 @@ class ExpenseTracker(webapp2.RequestHandler):
 
         expense.put()
         self.response.headers['Content-Type'] = 'text/plain'
-        self.response.write("Successfully added expense!")
-        #self.redirect('/')
+        #self.response.write("Successfully added expense!")
+        self.redirect('/admin')
 
 class Admin(webapp2.RequestHandler):
     def get(self):
         expenses_query = Expense.query(
-            ancestor=expense_key(DEFAULT_EXPENSE)).order(-Expense.transactionDate)
+            ancestor=expense_key(DEFAULT_EXPENSE)).order(-Expense.transactionDate, -Expense.createdDate)
         expenses = expenses_query.fetch()
 
         paidByKai = 0

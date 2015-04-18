@@ -15,3 +15,11 @@ indexes:
   properties:
   - name: transactionDate
     direction: desc
+
+- kind: Expense
+  ancestor: yes
+  properties:
+  - name: transactionDate
+    direction: desc
+  - name: createdDate
+    direction: desc
