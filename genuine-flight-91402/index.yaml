@@ -13,5 +13,5 @@ indexes:
 - kind: Expense
   ancestor: yes
   properties:
-  - name: date
+  - name: transactionDate
     direction: desc

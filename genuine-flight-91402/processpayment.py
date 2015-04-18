@@ -1,5 +1,6 @@
 # processpayment.py
 
+import datetime
 import jinja2
 import cgi
 import json
@@ -23,18 +24,13 @@ jinja_environment = jinja2.Environment(
 
 class Expense(ndb.Model):
     """ A main model for representing an individual expense entry """
-    date = ndb.DateTimeProperty(auto_now_add=True)
+    createdDate = ndb.DateTimeProperty(auto_now_add=True)
+    transactionDate = ndb.DateTimeProperty(indexed=True)
     details = ndb.StringProperty(indexed=False)
     amount = ndb.FloatProperty(indexed=False)
     kaiAmount = ndb.FloatProperty(indexed=False)
     keenAmount = ndb.FloatProperty(indexed=False)
     paidBy = ndb.StringProperty(indexed=False)
-
-class ExpenseEntry:
-    def __init__(self, details, amount, paidBy):
-         self.details = details
-         self.amount = amount
-         self.paidBy = paidBy
 
 class MainPage(webapp2.RequestHandler):
     def get(self): 
@@ -46,10 +42,13 @@ class ExpenseTracker(webapp2.RequestHandler):
         print self.request
         expense = Expense(parent=expense_key(DEFAULT_EXPENSE))
         expense.details = self.request.get('details')
+        expense.transactionDate = datetime.datetime.strptime(self.request.get('date'), "%Y-%m-%d")
         expense.amount = float(self.request.get('amount', 0))
         expense.kaiAmount = float(self.request.get('kaiAmount', 0))
         expense.keenAmount = float(self.request.get('keenAmount', 0))
         expense.paidBy = self.request.get('paidBy')
+        print expense
+
         expense.put()
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write("Successfully added expense!")
@@ -58,7 +57,7 @@ class ExpenseTracker(webapp2.RequestHandler):
 class Admin(webapp2.RequestHandler):
     def get(self):
         expenses_query = Expense.query(
-            ancestor=expense_key(DEFAULT_EXPENSE)).order(-Expense.date)
+            ancestor=expense_key(DEFAULT_EXPENSE)).order(-Expense.transactionDate)
         expenses = expenses_query.fetch()
 
         paidByKai = 0
