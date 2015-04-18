@@ -47,8 +47,9 @@
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon"><span class="glyphicon glyphicon-usd" aria-hidden="true"></span></div>
-                    <input type="number" class="form-control" name="amount" placeholder="Transaction Amount" required>
-                    <div class="input-group-addon"><input type="checkbox"></div>
+                        <input type="number" class="form-control" name="amount" placeholder="Transaction Amount" style="width: 278px" min="0" step="any" required>
+                        <button class="btn btn-default" id="splitEqually">Shared Equally</button>
+                    <!--<div class="input-group-addon"><input type="checkbox" id="splitEqually"></div>-->
                 </div>
             </div>
 
@@ -64,7 +65,7 @@
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon"><span class="glyphicon glyphicon-apple" aria-hidden="true"></span></div>
-                    <input type="number" class="form-control" name="kaiAmount" placeholder="Kai's Amount" required>
+                    <input type="number" class="form-control" name="kaiAmount" placeholder="Kai's Amount" min='0' step='any' required>
                 </div>
             </div>
 
@@ -72,7 +73,7 @@
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon"><span class="glyphicon glyphicon-plane" aria-hidden="true"></span></div>
-                    <input type="number" class="form-control" name="keenAmount" placeholder="Keen's Amount" required>
+                    <input type="number" class="form-control" name="keenAmount" placeholder="Keen's Amount" min='0' step='any' required>
                 </div>
             </div>
 
@@ -93,45 +94,28 @@
 
     <script>
       $(document).ready(function() {
+          var amountInput = $('input[name=amount]');
+          var kaiInput    = $('input[name=kaiAmount]');
+          var keenInput   = $('input[name=keenAmount]');
 
-        $("#sharedEqually").click(function() {
-          if (this.checked) {
-            $("#splitAmount").slideUp();
-            var amount = $("#inputAmount").val();
-            $("#kaiAmount").val(amount / 2);
-            $("#keenAmount").val(amount / 2);
-          } else {
-            $("#splitAmount").slideDown();
-          }
+        $("#splitEqually").click(function() {
+            var amount = parseFloat(amountInput.val());
+            console.log(amount);
+            if (!isNaN(amount) && amount > 0) {
+                kaiInput.val(amount / 2);
+                keenInput.val(amount / 2);
+            }
         });
 
-        /*
-        $("form").submit(function(event) {
-          event.preventDefault();
-          console.log("Submit button clicked!");
-          var transactionData = {
-            paidBy     : $("input[name=payer]:checked").val(),
-            details    : $("#paymentDetails").val(),
-            amount     : $("#inputAmount").val(),
-            kaiAmount  : $("#kaiAmount").val(),
-            keenAmount : $("#keenAmount").val()
-          };
-          console.log(transactionData);
-          $.ajax({
-            type: "POST",
-            url: "/processpayment",
-            data: transactionData
-          }).done(function(data) {
-            alert(data);
-          }).fail(function(jqXHR, textStatus, errorThrown) {
-            console.log("ajax failed");
-            console.log("jqXHR = " + jqXHR);
-            console.log("textStatus = " + textStatus);
-            console.log("errorThrown = " + errorThrown);
-          });;
-        })
-        */
-
+        $('form').submit(function(event) {
+            var total = parseFloat(amountInput.val());
+            var kai   = parseFloat(kaiInput.val());
+            var keen  = parseFloat(keenInput.val());
+            if (kai + keen != total) {
+                alert("Kai and Keen amount must add up to " + total);
+                event.preventDefault();
+            }
+        });
       });
     </script>
   </body>
