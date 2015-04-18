@@ -19,6 +19,7 @@
     <![endif]-->
   </head>
   <body>
+    <div class="alert {{ alertType }} text-center h3" role="alert" >{{ message }}</div>
     <table class="table table-hover">
       <thead>
         <tr>
@@ -45,9 +46,6 @@
         {% endfor %}
       </tbody>
     </table>
-
-    <div class="alert {{ alertType }} text-center h3" role="alert" >{{ message }}</div>
-
   </body>
 </html>
 {% endautoescape %}
