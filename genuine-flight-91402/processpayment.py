@@ -59,10 +59,26 @@ class Admin(webapp2.RequestHandler):
     def get(self):
         expenses_query = Expense.query(
             ancestor=expense_key(DEFAULT_EXPENSE)).order(-Expense.date)
-        expenses = expenses_query.fetch(10)
+        expenses = expenses_query.fetch()
+
+        paidByKai = 0
+        sharedByKai = 0
+        for expense in expenses:
+            if (expense.paidBy == 'Kai'):
+                paidByKai += expense.amount
+            sharedByKai += expense.kaiAmount
+
+        oweToKai = paidByKai - sharedByKai
+        
+        message = ''
+        if (oweToKai < 0):
+            message = 'Kai owes Keen USD ' + "{:10.2f}".format(abs(oweToKai))
+        else:
+            message = 'Keen owes Kai USD ' + "{:10.2f}".format(oweToKai)
+        print message
 
         template = jinja_environment.get_template('admin.html')
-        self.response.out.write(template.render(expenses=expenses))
+        self.response.out.write(template.render({'expenses':expenses, 'message':message}))
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
