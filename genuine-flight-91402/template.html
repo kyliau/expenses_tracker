@@ -130,21 +130,19 @@
           var kaiInput    = $('input[name=kaiAmount]');
           var keenInput   = $('input[name=keenAmount]');
 
-        function calculateAmount() {
+        $("#splitEqually").click(function() {
             var amount = parseFloat(amountInput.val());
-            if (isNaN(amount) || amount < 0) {
+            if (isNaN(amount)) {
                 amount = 0;
             }
-            if ($('#splitEqually').is(':checked')) {
+            if (this.checked) {
                 kaiInput.val(amount / 2);
                 keenInput.val(amount / 2);
                 $('#individualAmount').slideUp();
             } else {
                 $('#individualAmount').slideDown();
             }
-        }
-
-        $("#splitEqually").click(calculateAmount);
+        });
 
         setTodayDate();
 
@@ -155,13 +153,30 @@
                 event.preventDefault();
                 return;
             }
-            calculateAmount();
+
             var total = parseFloat(amountInput.val());
             var kai   = parseFloat(kaiInput.val());
             var keen  = parseFloat(keenInput.val());
-            if (isNaN(total) || isNaN(kai) || isNaN(keen) || (kai + keen != total)) {
+
+            if (isNaN(total) || total <= 0) {
                 alert("Amount is invalid");
                 event.preventDefault();
+            } else if ($("#splitEqually").is(':checked')) {
+                kaiInput.val(total / 2);
+                keenInput.val(total / 2);
+            } else {
+                if (isNaN(kai)) {
+                    kai = 0;
+                    kaiInput.val(0);
+                }
+                if (isNaN(keen)) {
+                    keen = 0;
+                    keenInput.val(0);
+                }
+                if (kai + keen !== total) {
+                    alert("Amount is invalid");
+                    event.preventDefault();
+                }
             }
         });
       });
