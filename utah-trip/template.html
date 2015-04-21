@@ -133,7 +133,7 @@
             if ($("#splitEqually").is(":checked")) {
                 var total = parseFloat(amountInput.val());
                 if (!isNaN(total)) {
-                    var splits = $('#splitAmong input:checked');
+                    var splits = $('#splitAmong .row input:checked');
                     var count = splits.length;
                     splits.each(function() {
                         $('input[name=' + this.value + 'Amount]').val(total / count);
@@ -152,6 +152,7 @@
                         'checked': true,
                         'disabled' : true
                     });
+                    calculateSplit();
                     target.show();
                 } else {
                     $('#splitAmong .row input').prop({
@@ -172,15 +173,13 @@
                 }
             });
 
-          var kaiInput    = $('input[name=kaiAmount]');
-          var keenInput   = $('input[name=keenAmount]');
-
         $("#splitEqually").click(function() {
             if (this.checked) {
                 calculateSplit();
-                $('#individualAmount').slideUp();
+                $('#individualAmount').hide();
             } else {
-                $('#individualAmount').slideDown();
+                $('#individualAmount input').val('');
+                $('#individualAmount').show();
             }
         });
 
@@ -195,26 +194,25 @@
             }
 
             var total = parseFloat(amountInput.val());
-            var kai   = parseFloat(kaiInput.val());
-            var keen  = parseFloat(keenInput.val());
 
             if (isNaN(total) || total <= 0) {
                 alert("Amount is invalid");
                 event.preventDefault();
-            } else if ($("#splitEqually").is(':checked')) {
-                kaiInput.val(total / 2);
-                keenInput.val(total / 2);
+                return;
+            }
+                
+            if ($("#splitEqually").is(':checked')) {
+                calculateSplit();
             } else {
-                if (isNaN(kai)) {
-                    kai = 0;
-                    kaiInput.val(0);
-                }
-                if (isNaN(keen)) {
-                    keen = 0;
-                    keenInput.val(0);
-                }
-                if (kai + keen !== total) {
-                    alert("Amount is invalid");
+                var sum = 0;
+                $('#individualAmount input').each(function() {
+                    var amount = parseFloat(this.value);
+                    if (!isNaN(amount)) {
+                        sum += amount;
+                    }
+                });
+                if (sum !== total) {
+                    alert("Amount does not tally");
                     event.preventDefault();
                 }
             }
