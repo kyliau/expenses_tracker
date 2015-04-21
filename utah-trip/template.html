@@ -145,6 +145,27 @@
         $(document).ready(function() {
             var amountInput = $('input[name=amount]');
 
+            var previousPerson = '';
+            $('select[name=paidBy]').click(function() {
+                previousPerson = this.value.replace(/ /g, '').toLowerCase();
+                console.log(previousPerson);
+            }).change(function() {
+                if ($('#splitAll').is(':checked')) {
+                    return;
+                }
+                var elemId = this.value.replace(/ /g, '').toLowerCase();
+                $('input[type=checkbox]').each(function() {
+                    var relatedInput = $('input[name=' + this.value + 'Amount]');
+                    if (this.value === elemId) {
+                        this.checked = true;
+                        relatedInput.closest('.form-group').show();
+                    } else if (this.value === previousPerson) {
+                        this.checked = false;
+                        relatedInput.closest('.form-group').hide();
+                    }
+                });
+            }).trigger('change');
+
             $('#splitAll').click(function() {
                 var target = $('#individualAmount .form-group');
                 if (this.checked) {

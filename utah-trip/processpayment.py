@@ -82,9 +82,9 @@ class ExpenseTracker(webapp2.RequestHandler):
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write("Successfully added expense!")
-        self.redirect('/admin?user=%s' % expense.paidBy)
+        self.redirect('/summary?user=%s' % expense.paidBy)
 
-class Admin(webapp2.RequestHandler):
+class Summary(webapp2.RequestHandler):
     def get(self):
         user = self.request.get('user')
         person_query = Person.query(Person.name == user)
@@ -92,7 +92,7 @@ class Admin(webapp2.RequestHandler):
 
         if not person:
             self.response.headers['Content-Type'] = 'text/plain'
-            self.response.write('%s is not found' % user)
+            self.response.write('User %s is not found' % user)
             return
 
         user = person[0]
@@ -127,7 +127,7 @@ class Admin(webapp2.RequestHandler):
             message = 'Auntie Terry owes %s USD %s' % (user.name, "{:10.2f}".format(abs(amountOwed)))
         print message
 
-        template = jinja_environment.get_template('admin.html')
+        template = jinja_environment.get_template('summary.html')
         self.response.out.write(template.render({
             'user': user,
             'expenses': userExpenses,
@@ -141,5 +141,6 @@ app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/submit', ExpenseTracker),
     ('/admin', Admin),
+    ('/summary', Summary),
 ], debug=True)
 
