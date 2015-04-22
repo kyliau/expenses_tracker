@@ -78,11 +78,12 @@ class ExpenseTracker(webapp2.RequestHandler):
             elemId = person.shortName + 'Amount'
             individualAmount = self.request.get(elemId, 0) or 0
             expense.individualAmount.append(float(individualAmount))
-        expense.put()
-
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.write("Successfully added expense!")
-        self.redirect('/summary?user=%s' % expense.paidBy)
+        if sum(expense.individualAmount) != expense.amount:
+            self.response.headers['Content-Type'] = 'text/plain'
+            self.response.write("Amount does not tally. Transaction is not recorded")
+        else:
+            expense.put()
+            self.redirect('/summary?user=%s' % expense.paidBy)
 
 class Summary(webapp2.RequestHandler):
     def get(self):
@@ -125,7 +126,6 @@ class Summary(webapp2.RequestHandler):
             message = '%s owes Auntie Terry USD %s' % (user.name, "{:10.2f}".format(amountOwed))
         else:
             message = 'Auntie Terry owes %s USD %s' % (user.name, "{:10.2f}".format(abs(amountOwed)))
-        print message
 
         template = jinja_environment.get_template('summary.html')
         self.response.out.write(template.render({
@@ -135,6 +135,22 @@ class Summary(webapp2.RequestHandler):
             'message': message,
             'totalPaid': totalPaid,
             'totalSpent': totalSpent
+        }))
+
+class Admin(webapp2.RequestHandler):
+    def get(self):
+        expenses_query = Expense.query(
+            ancestor=expense_key(DEFAULT_EXPENSE)).order(-Expense.transactionDate, -Expense.createdDate)
+        expenses = expenses_query.fetch()
+
+        persons_query = Person.query(
+            ancestor=person_key(DEFAULT_PERSON)).order(Person.name)
+        persons = persons_query.fetch()
+
+        template = jinja_environment.get_template('admin.html')
+        self.response.out.write(template.render({
+            'expenses': expenses,
+            'persons': persons
         }))
 
 app = webapp2.WSGIApplication([

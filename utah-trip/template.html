@@ -148,7 +148,6 @@
             var previousPerson = '';
             $('select[name=paidBy]').click(function() {
                 previousPerson = this.value.replace(/ /g, '').toLowerCase();
-                console.log(previousPerson);
             }).change(function() {
                 if ($('#splitAll').is(':checked')) {
                     return;
@@ -223,6 +222,11 @@
             }
                 
             if ($("#splitEqually").is(':checked')) {
+                if ($('#splitAmong .row input:checked').length === 0) {
+                    alert("Must choose at least one person to split");
+                    event.preventDefault();
+                    return;
+                }
                 calculateSplit();
             } else {
                 var sum = 0;
