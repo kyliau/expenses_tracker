@@ -78,12 +78,12 @@ class ExpenseTracker(webapp2.RequestHandler):
             elemId = person.shortName + 'Amount'
             individualAmount = self.request.get(elemId, 0) or 0
             expense.individualAmount.append(float(individualAmount))
-        if sum(expense.individualAmount) != expense.amount:
-            self.response.headers['Content-Type'] = 'text/plain'
-            self.response.write("Amount does not tally. Transaction is not recorded")
-        else:
+        if abs(sum(expense.individualAmount) - expense.amount) < 0.05:
             expense.put()
             self.redirect('/summary?user=%s' % expense.paidBy)
+        else:
+            self.response.headers['Content-Type'] = 'text/plain'
+            self.response.write("Amount does not tally. Transaction is not recorded")
 
 class Summary(webapp2.RequestHandler):
     def get(self):
