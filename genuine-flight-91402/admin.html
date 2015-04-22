@@ -38,10 +38,10 @@
           <th scope="row">{{ loop.index }}</th>
           <td>{{ expense.transactionDate.strftime('%Y-%m-%d') }}</td>
           <td>{{ expense.details }}</td>
-          <td>{{ expense.amount }}</td>
+          <td>{{ "{:10.2f}".format(expense.amount) }}</td>
           <td>{{ expense.paidBy }}</td>
-          <td>{{ expense.kaiAmount }}</td>
-          <td>{{ expense.keenAmount }}</td>
+          <td>{{ "{:10.2f}".format(expense.kaiAmount) }}</td>
+          <td>{{ "{:10.2f}".format(expense.keenAmount) }}</td>
         </tr>
         {% endfor %}
       </tbody>

@@ -39,7 +39,6 @@ class MainPage(webapp2.RequestHandler):
 
 class ExpenseTracker(webapp2.RequestHandler):
     def post(self):
-        print self.request
         expense = Expense(parent=expense_key(DEFAULT_EXPENSE))
         expense.details = self.request.get('details')
         expense.transactionDate = datetime.datetime.strptime(self.request.get('date'), "%Y-%m-%d")
@@ -47,10 +46,8 @@ class ExpenseTracker(webapp2.RequestHandler):
         expense.kaiAmount = float(self.request.get('kaiAmount', 0))
         expense.keenAmount = float(self.request.get('keenAmount', 0))
         expense.paidBy = self.request.get('paidBy')
-        print expense
-
         expense.put()
-        self.response.headers['Content-Type'] = 'text/plain'
+        #self.response.headers['Content-Type'] = 'text/plain'
         #self.response.write("Successfully added expense!")
         self.redirect('/admin')
 
@@ -78,7 +75,6 @@ class Admin(webapp2.RequestHandler):
             message = 'Kai owes Keen USD ' + "{:10.2f}".format(abs(oweToKai))
         else:
             message = 'Keen owes Kai USD ' + "{:10.2f}".format(oweToKai)
-        print message
 
         template = jinja_environment.get_template('admin.html')
         self.response.out.write(template.render({'expenses':expenses, 'alertType':alertType, 'message':message}))
