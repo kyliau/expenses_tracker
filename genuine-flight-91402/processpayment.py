@@ -8,6 +8,7 @@ import os
 import webapp2
 
 from google.appengine.ext import ndb
+from google.appengine.api import mail
 
 DEFAULT_EXPENSE = 'default_expense'
 
@@ -47,9 +48,34 @@ class ExpenseTracker(webapp2.RequestHandler):
         expense.keenAmount = float(self.request.get('keenAmount', 0))
         expense.paidBy = self.request.get('paidBy')
         expense.put()
+        sendSummaryEmail(expense)
         #self.response.headers['Content-Type'] = 'text/plain'
         #self.response.write("Successfully added expense!")
         self.redirect('/admin')
+
+def sendSummaryEmail(expense):
+    message = mail.EmailMessage()
+    message.sender = "Expenses Tracker <admin@genuine-flight-91402.appspotmail.com>"
+    message.subject = "{} paid ${:.2f} for {}".format(expense.paidBy,
+                                                      expense.amount,
+                                                      expense.details)
+    message.body = """
+    Date        : {}
+    Amount      : ${:.2f}
+    Details     : {}
+    Paid By     : {}
+    Kai Amount  : ${:.2f}
+    Keen Amount : ${:.2f}
+    """.format(expense.transactionDate,
+               expense.amount,
+               expense.details,
+               expense.paidBy,
+               expense.kaiAmount,
+               expense.keenAmount)
+    message.to = "Kai Boon Ee <eekaiboon@gmail.com>"
+    message.send()
+    message.to = "Keen Yee Liau <kyliau@gmail.com>"
+    message.send()
 
 class Admin(webapp2.RequestHandler):
     def get(self):
