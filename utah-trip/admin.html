@@ -41,7 +41,7 @@
           <td>{{ "{:.2f}".format(expense.amount) }}</td>
           <td>{{ expense.paidBy }}</td>
           {% for amount in expense.individualAmount %}
-          <td>{{ "{:10.2f}".format(amount) }}</td>
+          <td>{% if amount > 0 %}{{ "{:.2f}".format(amount) }}{% endif %}</td>
           {% endfor %}
         </tr>
         {% endfor %}
