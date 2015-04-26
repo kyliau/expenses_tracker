@@ -72,7 +72,9 @@
                     <label class="checkbox-inline"><input type="checkbox" id="splitAll">All</label>
                     {% for person in persons %}
                         {% if loop.index % 3 == 1 %}<div class="row">{% endif %}
-                        <div class="col-xs-4"><label class="checkbox-inline"><input type="checkbox" value="{{ person.shortName }}">{{ person.name }}</label></div>
+                            <div class="col-xs-4">
+                                <label class="checkbox-inline"><input type="checkbox" id="{{ person.shortName }}" value="{{ person.shortName }}">{{ person.name }}</label>
+                            </div>
                         {% if loop.index % 3 == 0 %}</div>{% endif %}
                     {% endfor %}
                 </div>
@@ -114,7 +116,7 @@
     <script src="bootstrap/js/bootstrap.min.js"></script>
 
     <script>
-        function setTodayDate() {
+        function getTodayDate() {
             var today = new Date();
             var dd = today.getDate();
             var mm = today.getMonth() + 1;
@@ -125,124 +127,104 @@
             if (mm < 10) {
                 mm = '0' + mm;
             }
-            $('input[name=date]').val(yyyy + '-' + mm + '-' + dd);
+            return yyyy + '-' + mm + '-' + dd;
+        }
+
+        function getShortName(name) {
+            return name.replace(/ /g, '').toLowerCase();
         }
 
         function calculateSplit() {
             var amountInput = $('input[name=amount]');
-            if ($("#splitEqually").is(":checked")) {
-                var total = parseFloat(amountInput.val());
-                if (!isNaN(total)) {
-                    var splits = $('#splitAmong .row input:checked');
-                    var count = splits.length;
-                    splits.each(function() {
-                        $('input[name=' + this.value + 'Amount]').val(total / count);
-                    });
-                }
-            }
+            var total = parseFloat(amountInput.val());
+            var splits = $('#splitAmong .row input:checked');
+            var count = splits.length;
+            splits.each(function() {
+                $('input[name=' + this.value + 'Amount]').val(total / count);
+            });
         }
 
         $(document).ready(function() {
-            var amountInput = $('input[name=amount]');
+            $('input[name=date]').val(getTodayDate());
+
+            $('#splitAmong .row input').change(function() {
+                var inputElem = $('input[name=' + this.value + 'Amount]');
+                if (this.checked) {
+                    inputElem.closest('.form-group').show();
+                } else {
+                    inputElem.closest('.form-group').hide();
+                }
+            });
+
+            $('#splitAll').click(function() {
+                var flag = this.checked;
+                $('#splitAmong .row input').prop({
+                    'checked'  : flag,
+                    'disabled' : flag
+                }).trigger('change');
+            });
 
             var previousPerson = '';
             $('select[name=paidBy]').click(function() {
-                previousPerson = this.value.replace(/ /g, '').toLowerCase();
+                previousPerson = getShortName(this.value);
             }).change(function() {
-                if ($('#splitAll').is(':checked')) {
-                    return;
+                if (!$('#splitAll').is(':checked')) {
+                    var shortName = getShortName(this.value);
+                    $('#' + previousPerson).prop('checked', false)
+                                           .trigger('change');
+                    $('#' + shortName).prop('checked', true).trigger('change');
                 }
-                var elemId = this.value.replace(/ /g, '').toLowerCase();
-                $('input[type=checkbox]').each(function() {
-                    var relatedInput = $('input[name=' + this.value + 'Amount]');
-                    if (this.value === elemId) {
-                        this.checked = true;
-                        relatedInput.closest('.form-group').show();
-                    } else if (this.value === previousPerson) {
-                        this.checked = false;
-                        relatedInput.closest('.form-group').hide();
-                    }
-                });
             }).trigger('change');
 
-            $('#splitAll').click(function() {
-                var target = $('#individualAmount .form-group');
+            $("#splitEqually").click(function() {
                 if (this.checked) {
-                    $('#splitAmong .row input').prop({
-                        'checked': true,
-                        'disabled' : true
-                    });
-                    calculateSplit();
-                    target.show();
+                    $('#individualAmount').hide();
                 } else {
-                    $('#splitAmong .row input').prop({
-                        'checked': false,
-                        'disabled' : false
-                    });
-                    target.hide();
+                    $('#individualAmount input').val('');
+                    $('#individualAmount').show();
                 }
             });
-
-            $('#splitAmong .row input').click(function() {
-                var inputElem = $('input[name=' + this.value + 'Amount]').closest('.form-group');
-                if (this.checked) {
-                    calculateSplit();
-                    inputElem.show();
-                } else {
-                    inputElem.hide();
-                }
-            });
-
-        $("#splitEqually").click(function() {
-            if (this.checked) {
-                calculateSplit();
-                $('#individualAmount').hide();
-            } else {
-                $('#individualAmount input').val('');
-                $('#individualAmount').show();
-            }
         });
 
-        setTodayDate();
-
-        $('form').submit(function(event) {
-            var details = $('input[name=details]').val().trim();
-            if (details.length === 0) {
-                alert("Please enter transaction details");
-                event.preventDefault();
-                return;
-            }
-
-            var total = parseFloat(amountInput.val());
-
-            if (isNaN(total) || total <= 0) {
-                alert("Amount is invalid");
-                event.preventDefault();
-                return;
-            }
-                
-            if ($("#splitEqually").is(':checked')) {
-                if ($('#splitAmong .row input:checked').length === 0) {
-                    alert("Must choose at least one person to split");
+        $(document).ready(function() {
+            $('form').submit(function(event) {
+                var details = $('input[name=details]').val().trim();
+                if (details.length === 0) {
+                    alert("Please enter transaction details");
                     event.preventDefault();
                     return;
                 }
-                calculateSplit();
-            } else {
-                var sum = 0;
-                $('#individualAmount input').each(function() {
-                    var amount = parseFloat(this.value);
-                    if (!isNaN(amount)) {
-                        sum += amount;
-                    }
-                });
-                if (sum !== total) {
-                    alert("Amount does not tally");
+
+                var amountInput = $('input[name=amount]');
+                var total = parseFloat(amountInput.val());
+                if (isNaN(total) || total <= 0) {
+                    alert("Amount is invalid");
                     event.preventDefault();
+                    return;
                 }
-            }
+                    
+                if ($("#splitEqually").is(':checked')) {
+                    if ($('#splitAmong .row input:checked').length === 0) {
+                        alert("Must choose at least one person to split");
+                        event.preventDefault();
+                        return;
+                    }
+                    calculateSplit();
+                } else {
+                    var sum = 0;
+                    $('#individualAmount input').each(function() {
+                        var amount = parseFloat(this.value);
+                        if (!isNaN(amount)) {
+                            sum += amount;
+                        }
+                    });
+                    if (sum !== total) {
+                        alert("Amount does not tally");
+                        event.preventDefault();
+                    }
+                }
+            });
         });
-      });
     </script>
   </body>
 </html>
