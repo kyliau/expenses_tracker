@@ -130,9 +130,9 @@ class Summary(webapp2.RequestHandler):
             message = 'All dues are clear'
             alertType = 'alert-success'
         elif amountOwed > 0:
-            message = '%s owes Auntie Terry USD %s' % (user.name, "{:10.2f}".format(amountOwed))
+            message = '%s owes Auntie Terry $%s' % (user.name, "{:.2f}".format(amountOwed))
         else:
-            message = 'Auntie Terry owes %s USD %s' % (user.name, "{:10.2f}".format(abs(amountOwed)))
+            message = 'Auntie Terry owes %s $%s' % (user.name, "{:.2f}".format(abs(amountOwed)))
 
         template = jinja_environment.get_template('summary.html')
         self.response.out.write(template.render({

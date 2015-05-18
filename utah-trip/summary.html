@@ -19,10 +19,8 @@
     <![endif]-->
   </head>
   <body>
-    <div class="container">
-
       <!-- Static navbar -->
-      <nav class="navbar navbar-default">
+      <nav class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -41,6 +39,8 @@
           </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->
       </nav>
+
+    <div class="container">
 
     <div class="input-group">
         <div class="input-group-addon"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></div>
@@ -69,8 +69,8 @@
           <th scope="row">{{ loop.index }}</th>
           <td>{{ expense.transactionDate.strftime('%Y-%m-%d') }}</td>
           <td>{{ expense.details }}</td>
-          <td>{% if expense.paidBy == user.name %}{{ "{:.2f}".format(expense.amount) }}{% endif %}</td>
-          <td>{% if expense.individualAmount[user.userId] > 0 %}{{ "{:.2f}".format(expense.individualAmount[user.userId]) }}{% endif %}</td>
+          <td>{% if expense.paidBy == user.name %}{{ "${:.2f}".format(expense.amount) }}{% endif %}</td>
+          <td>{% if expense.individualAmount[user.userId] > 0 %}{{ "${:.2f}".format(expense.individualAmount[user.userId]) }}{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -78,8 +78,8 @@
         <td></td>
         <td></td>
         <td>Total</td>
-        <td>{{ "{:.2f}".format(totalPaid) }}</td>
-        <td>{{ "{:.2f}".format(totalSpent) }}</td>
+        <td>{{ "${:.2f}".format(totalPaid) }}</td>
+        <td>{{ "${:.2f}".format(totalSpent) }}</td>
       </tfoot>
     </table>
     {% endif %}
