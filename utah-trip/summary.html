@@ -19,6 +19,39 @@
     <![endif]-->
   </head>
   <body>
+    <div class="container">
+
+      <!-- Static navbar -->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Expenses Tracker</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              <li class="active"><a href="/summary">Summary</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
+
+    <div class="input-group">
+        <div class="input-group-addon"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></div>
+        <select name="paidBy" class="form-control">
+            {% if not user %}<option disabled selected>Select user</option>{% endif %}
+            {% for person in persons %}
+                <option {% if user and user.name == person.name %}selected{% endif %}>{{person.name}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% if user %}
     <div class="alert {{ alertType }} text-center h3" role="alert" >{{ message }}</div>
     <table class="table table-hover">
       <thead>
@@ -36,8 +69,8 @@
           <th scope="row">{{ loop.index }}</th>
           <td>{{ expense.transactionDate.strftime('%Y-%m-%d') }}</td>
           <td>{{ expense.details }}</td>
-          <td>{% if expense.paidBy == user.name %}{{ "{:10.2f}".format(expense.amount) }}{% endif %}</td>
-          <td>{% if expense.individualAmount[user.userId] > 0 %}{{ "{:10.2f}".format(expense.individualAmount[user.userId]) }}{% endif %}</td>
+          <td>{% if expense.paidBy == user.name %}{{ "{:.2f}".format(expense.amount) }}{% endif %}</td>
+          <td>{% if expense.individualAmount[user.userId] > 0 %}{{ "{:.2f}".format(expense.individualAmount[user.userId]) }}{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -45,10 +78,24 @@
         <td></td>
         <td></td>
         <td>Total</td>
-        <td>{{ "{:10.2f}".format(totalPaid) }}</td>
-        <td>{{ "{:10.2f}".format(totalSpent) }}</td>
+        <td>{{ "{:.2f}".format(totalPaid) }}</td>
+        <td>{{ "{:.2f}".format(totalSpent) }}</td>
       </tfoot>
     </table>
+    {% endif %}
+    </div> <!-- /container -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('select').change(function() {
+                location.assign('/summary?user=' + this.value);
+            });
+        });
+    </script>
   </body>
 </html>
 {% endautoescape %}

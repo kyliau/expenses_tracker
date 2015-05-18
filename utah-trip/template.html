@@ -21,10 +21,35 @@
   </head>
   <body>
 
-<div class="panel panel-primary" style="margin: 10px">
+<div class="container">
+
+      <!-- Static navbar -->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Expenses Tracker</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="/summary">Summary</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
+
+<div class="panel panel-default">
+    <!--
     <div class="panel-heading">
         <h3 class="panel-title" id="panel-title">Expenses Tracker</h3>
     </div>
+    -->
     <div class="panel-body" style="padding: 20px 30px">
         <form class="form-horizontal" action="/submit" method="post">
 
@@ -73,9 +98,9 @@
                     {% for person in persons %}
                         {% if loop.index % 3 == 1 %}<div class="row">{% endif %}
                             <div class="col-xs-4">
-                                <label class="checkbox-inline"><input type="checkbox" id="{{ person.shortName }}" value="{{ person.shortName }}">{{ person.name }}</label>
+                                <label class="checkbox-inline"><input type="checkbox" class="participant" id="{{ person.shortName }}" value="{{ person.shortName }}">{{ person.name }}</label>
                             </div>
-                        {% if loop.index % 3 == 0 %}</div>{% endif %}
+                        {% if loop.index % 3 == 0 or loop.index == persons|count %}</div>{% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -107,8 +132,7 @@
         </form>
     </div>
 </div>
-
-
+</div> <!-- /container -->
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
@@ -137,7 +161,7 @@
         function calculateSplit() {
             var amountInput = $('input[name=amount]');
             var total = parseFloat(amountInput.val());
-            var splits = $('#splitAmong .row input:checked');
+            var splits = $('.participant:checked');
             var count = splits.length;
             splits.each(function() {
                 $('input[name=' + this.value + 'Amount]').val(total / count);
@@ -145,23 +169,24 @@
         }
 
         $(document).ready(function() {
+            var NUM_PARTICIPANT = $('option').length;
+
             $('input[name=date]').val(getTodayDate());
 
-            $('#splitAmong .row input').change(function() {
+            $('.participant').change(function() {
                 var inputElem = $('input[name=' + this.value + 'Amount]');
                 if (this.checked) {
                     inputElem.closest('.form-group').show();
                 } else {
                     inputElem.closest('.form-group').hide();
                 }
+                var flag = $('.participant:checked').length === NUM_PARTICIPANT;
+                $('#splitAll').prop('checked', flag);
             });
 
             $('#splitAll').click(function() {
-                var flag = this.checked;
-                $('#splitAmong .row input').prop({
-                    'checked'  : flag,
-                    'disabled' : flag
-                }).trigger('change');
+                $('.participant').prop('checked', this.checked)
+                                 .trigger('change');
             });
 
             var previousPerson = '';
@@ -204,7 +229,7 @@
                 }
                     
                 if ($("#splitEqually").is(':checked')) {
-                    if ($('#splitAmong .row input:checked').length === 0) {
+                    if ($('.participant:checked').length === 0) {
                         alert("Must choose at least one person to split");
                         event.preventDefault();
                         return;

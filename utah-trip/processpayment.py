@@ -44,7 +44,7 @@ jinja_environment = jinja2.Environment(
     autoescape=True)
 
 def populatePerson():
-    array = ['Edward','Hui Xian', 'Jess', 'Ji Chuan', 'Kai Boon', 'Keen Yee', 'Khai Ren', 'Lee Sin', 'Lyndy', 'Melissa', 'Paul', 'Rachel', 'Sonia', 'Tyng Yu', 'Yin Yu']
+    array = ['Edward','Hui Xian', 'Jess', 'Ji Chuan', 'Kai Boon', 'Keen Yee', 'Khai Ren', 'Lee Sin', 'Lyndy', 'Melissa', 'Paul', 'Sonia', 'Tyng Yu', 'Yin Yu']
     for i in range(len(array)):
         person = Person(parent=person_key(DEFAULT_PERSON))
         person.name = array[i]
@@ -91,9 +91,16 @@ class Summary(webapp2.RequestHandler):
         person_query = Person.query(Person.name == user)
         person = person_query.fetch()
 
+        persons_query = Person.query(
+            ancestor=person_key(DEFAULT_PERSON)).order(Person.name)
+        persons = persons_query.fetch()
+
         if not person:
-            self.response.headers['Content-Type'] = 'text/plain'
-            self.response.write('User %s is not found' % user)
+            template = jinja_environment.get_template('summary.html')
+            self.response.out.write(template.render({
+                'persons': persons,
+                'user': None
+            }))
             return
 
         user = person[0]
@@ -129,6 +136,7 @@ class Summary(webapp2.RequestHandler):
 
         template = jinja_environment.get_template('summary.html')
         self.response.out.write(template.render({
+            'persons': persons,
             'user': user,
             'expenses': userExpenses,
             'alertType': alertType,
