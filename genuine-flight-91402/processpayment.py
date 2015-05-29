@@ -41,7 +41,7 @@ class MainPage(webapp2.RequestHandler):
 class ExpenseTracker(webapp2.RequestHandler):
     def post(self):
         expense = Expense(parent=expense_key(DEFAULT_EXPENSE))
-        expense.details = self.request.get('details')
+        expense.details = self.request.get('details').strip()
         expense.transactionDate = datetime.datetime.strptime(self.request.get('date'), "%Y-%m-%d")
         expense.amount = float(self.request.get('amount', 0))
         expense.kaiAmount = float(self.request.get('kaiAmount', 0))
