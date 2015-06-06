@@ -44,7 +44,9 @@ jinja_environment = jinja2.Environment(
     autoescape=True)
 
 def populatePerson():
-    array = ['Edward','Hui Xian', 'Jess', 'Ji Chuan', 'Kai Boon', 'Keen Yee', 'Khai Ren', 'Lee Sin', 'Lyndy', 'Melissa', 'Paul', 'Sonia', 'Tyng Yu', 'Yin Yu']
+    array = ['Edward','Hui Xian', 'Jess', 'Ji Chuan', 'Kai Boon', 'Keen Yee',
+             'Khai Ren', 'Lee Sin', 'Lyndy', 'Melissa', 'Paul', 'Sonia',
+             'Tyng Yu', 'Yin Yu']
     for i in range(len(array)):
         person = Person(parent=person_key(DEFAULT_PERSON))
         person.name = array[i]
@@ -87,17 +89,36 @@ class ExpenseTracker(webapp2.RequestHandler):
 
 class Summary(webapp2.RequestHandler):
     def get(self):
-        user = self.request.get('user')
-        person_query = Person.query(Person.name == user)
-        person = person_query.fetch()
 
         persons_query = Person.query(
             ancestor=person_key(DEFAULT_PERSON)).order(Person.name)
         persons = persons_query.fetch()
+        
+        # create a map of person name to id
+        nameToId = {}
+        for p in persons:
+            nameToId[p.name] = p.userId
 
+        # a positive amount here means the user spent more than paid
+        amount = [0] * len(persons)
+
+        expenses_query = Expense.query(ancestor=expense_key(DEFAULT_EXPENSE)).order(-Expense.transactionDate, -Expense.createdDate)
+        expenses = expenses_query.fetch()
+
+        for expense in expenses:
+            uid = nameToId[expense.paidBy]
+            amount[uid] -= expense.amount
+            assert len(expense.individualAmount) == len(amount)
+            amount = [a + b for (a, b) in zip(expense.individualAmount,
+                                              amount)]
+
+        user = self.request.get('user')
+        person_query = Person.query(Person.name == user)
+        person = person_query.fetch()
         if not person:
             template = jinja_environment.get_template('summary.html')
             self.response.out.write(template.render({
+                'amount' : amount,
                 'persons': persons,
                 'user': None
             }))

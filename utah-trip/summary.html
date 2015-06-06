@@ -82,6 +82,18 @@
         <td>{{ "${:.2f}".format(totalSpent) }}</td>
       </tfoot>
     </table>
+    {% else %}
+        <table class="table table-hover">
+            <tbody>
+                {% for person in persons %}
+                    <tr>
+                        <td>{{ person.name }}</td>
+                        <td>{% if amount[person.userId] > 0 %}pays{% else %}receives{% endif %}</td>
+                        <td>{{ "${:.2f}".format(amount[person.userId]|abs) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
     </div> <!-- /container -->
 
