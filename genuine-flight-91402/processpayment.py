@@ -1,5 +1,6 @@
 # processpayment.py
 
+from __future__ import unicode_literals
 import datetime
 import jinja2
 import cgi
