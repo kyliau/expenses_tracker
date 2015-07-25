@@ -15,7 +15,7 @@ Expense Tracker
  - Show a link to all entries for the project
  - If owner
     - Allow owner to rename project
-    - Allow owner to project
+    - Allow owner to delete project
     - Allow owner to add participants
     - Allow owner to add / delete moderators
     - Allow owner to delete participants
