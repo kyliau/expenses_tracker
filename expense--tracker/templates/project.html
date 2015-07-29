@@ -1,14 +1,14 @@
 {% extends "templates/base.html" %}
 {% block container %}
 <div style="padding: 0 20px">
-  <form class="form-horizontal" action="/submit" method="post">
+  <form class="form-horizontal" method="post">
     <!-- Paid By -->
     <div class="form-group">
       <div class="input-group">
         <div class="input-group-addon"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></div>
         <select name="paid_by" class="form-control">
           {% for participant in participants %}
-          <option value="{{ participant.encoded_key }}">{{ participant.name }}</option>
+          <option value="{{ participant.encoded_key }}" {% if participant == current_user %}selected{% endif %}>{{ participant.name }}</option>
           {% endfor %}
         </select>
       </div>
@@ -64,7 +64,7 @@
       <div class="form-group" style="display:none">
         <div class="input-group">
           <div class="input-group-addon"><span>{{ participant.name }}</span></div>
-          <input type="number" class="form-control" name="{{ participant.encoded_key ~ '_amount' }}" placeholder="{{ participant.name }}'s Amount" min='0' step='any'>
+          <input type="number" class="form-control" name="{{ participant.encoded_key }}" placeholder="{{ participant.name }}'s Amount" min='0' step='any'>
         </div>
       </div>
       {% endfor %}
@@ -73,6 +73,7 @@
     <div class="form-group">
       <button type="submit" class="btn btn-default">Submit</button>
     </div>
+    <input type="hidden" name="project_key" value="{{project_key}}"/>
     <input type="hidden" name="split_with"/>
   </form>
 </div>
@@ -108,7 +109,7 @@ function calculateSplit() {
     var splits = $('.participant:checked');
     var count = splits.length;
     splits.each(function() {
-        $('input[name=' + this.value + 'Amount]').val(total / count);
+        $('input[name=' + this.value + ']').val(total / count);
     });
 }
 
@@ -118,7 +119,7 @@ $(document).ready(function() {
     $('input[name=date]').val(getTodayDate());
 
     $('.participant').change(function() {
-        var inputElem = $('input[name=' + this.value + 'Amount]');
+        var inputElem = $('input[name=' + this.value + ']');
         if (this.checked) {
             inputElem.closest('.form-group').show();
         } else {
@@ -134,7 +135,7 @@ $(document).ready(function() {
     });
 
     var previousPerson = '';
-    $('select[name=paidBy]').click(function() {
+    $('select[name=paid_by]').click(function() {
         previousPerson = this.value;
     }).change(function() {
         if (!$('#splitAll').is(':checked')) {

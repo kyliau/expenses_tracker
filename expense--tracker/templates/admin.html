@@ -1,0 +1,36 @@
+{% extends "templates/base.html" %}
+{% block container %}
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>#</th>    
+          <th>Date</th>
+          <th>Details</th>
+          <th>Amount</th>
+          <th>Paid By</th>
+          {% for participant in participants %}
+          <th>{{ participant.name }}</td>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for expense in expenses %}
+        <tr>
+          <th scope="row">{{ loop.index }}</th>
+          <td>{{ expense.transaction_date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ expense.details }}</td>
+          <td>{{ "$ {:.2f}".format(expense.amount) }}</td>
+          <td>{{ id_resolver[expense.paid_by].name }}</td>
+          {% for indvamt in expense.individual_amount %}
+          <td>{% if indvamt.amount > 0 %}{{ "$ {:.2f}".format(indvamt.amount) }}{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}
+{% block javascript %}
+<script>
+</script>
+{% endblock %}
+{# vim:set tabstop=2 shiftwidth=2 softtabstop=2 expandtab: #}
