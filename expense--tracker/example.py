@@ -5,6 +5,7 @@ import ettypes
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
+from datetime import datetime
 
 import jinja2
 import webapp2
@@ -35,6 +36,9 @@ class RegisterNewUser(webapp2.RequestHandler):
         # need to check if user is actually registered
         template = JINJA_ENVIRONMENT.get_template('templates/register.html')
         self.response.write(template.render())
+        # potential improvement: 
+        # add a query to signify where to redirect after user registers an
+        # account
 
     def post(self):
         user = users.get_current_user()
@@ -104,18 +108,134 @@ class ProjectHome(webapp2.RequestHandler):
             self.redirect('/home')
         user = users.get_current_user()
         appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        print ettypes.Settings.addNewSetting(project, appUser)
+        print ettypes.Settings.getAllSettings(appUser)
         if not appUser or appUser.key not in project.participants:
             self.abort(401)
         template = JINJA_ENVIRONMENT.get_template('templates/project.html')
         template_values = {
-            'logout_url' : users.create_logout_url('/'),
-            'participants' : project.getAllParticipants()
+            'project_key'  : projectKey.urlsafe(),
+            'logout_url'   : users.create_logout_url('/'),
+            'participants' : project.getAllParticipants(),
+            'current_user' : appUser
         }
         self.response.write(template.render(template_values))
 
-class Transaction(webapp2.RequestHandler):
     def post(self):
-        pass
+        encodedKey   = self.request.get('project_key')
+        date         = self.request.get('date')
+        amount       = float(self.request.get('amount', 0) or 0)
+        details      = self.request.get('details')
+        paidBy       = self.request.get('paid_by')
+        splitAll     = self.request.get('split_all')
+        splitEqually = self.request.get('split_equally')
+        splitWith    = self.request.get('split_with')
+
+        assert amount > 0
+
+        projectKey = ndb.Key(urlsafe=encodedKey)
+        project = projectKey.get()
+        assert project
+
+        paidByKey = ndb.Key(urlsafe=paidBy)
+        assert paidByKey in project.participants
+
+        transactionDate = datetime.strptime(date, "%Y-%m-%d")
+
+        expense = ettypes.Expense(parent=projectKey,
+                                  paid_by=paidByKey,
+                                  transaction_date=transactionDate,
+                                  details=details,
+                                  amount=amount,
+                                  split_equally=(splitEqually=="on"))
+        totalAmount = 0
+        for participant in project.participants:
+            amt = float(self.request.get(participant.urlsafe(), 0) or 0)
+            assert amt >= 0
+            totalAmount += amt
+            indvAmt = ettypes.IndividualAmount(user=participant, amount=amt)
+            expense.individual_amount.append(indvAmt)
+        assert abs(totalAmount - amount) < 0.01
+        expense.put()
+        # check if we need to send the email
+        query_params = { 'id': projectKey.urlsafe() }
+        self.redirect('/summary?' + project.url)
+
+def sendEmail(project, expense):
+    # first get the settings for all participants in the projects
+    pass
+
+class Summary(webapp2.RequestHandler):
+    def get(self):
+        projectId = self.request.get('id')
+        if not projectId:
+            self.redirect('/home')
+        projectKey = ndb.Key(urlsafe=projectId)
+        project = projectKey.get()
+        if not project:
+            self.redirect('/home')
+        user = users.get_current_user()
+        appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        if not appUser or appUser.key not in project.participants:
+            self.abort(401)
+        expenses = ettypes.Expense.queryByProjectKey(projectKey)
+        totalPaid = 0
+        totalSpent = 0
+        index = project.participants.index(appUser.key)
+        for expense in expenses:
+            if expense.paid_by == appUser.key:
+                totalPaid += expense.amount
+            individualAmount = expense.individual_amount[index].amount
+            totalSpent += individualAmount
+
+        amountOwed = totalSpent - totalPaid        
+        message = ''
+        alertType = 'alert-info'
+        if abs(amountOwed) < 0.05:
+            message = 'All dues are clear'
+            alertType = 'alert-success'
+        elif amountOwed > 0:
+            message = '%s owes Auntie Terry %s' % (appUser.name, "$ {:.2f}".format(amountOwed))
+        else:
+            message = 'Auntie Terry owes %s %s' % (appUser.name, "$ {:.2f}".format(abs(amountOwed)))
+
+        template = JINJA_ENVIRONMENT.get_template('templates/summary.html')
+        template_values = {
+            'message'     : message,
+            'alert_type'  : alertType,
+            'logout_url'  : users.create_logout_url('/'),
+            'user_key'    : appUser.key,
+            'expenses'    : expenses,
+            'index'       : index,
+            'total_paid'  : totalPaid,
+            'total_spent' : totalSpent,
+            'id_resolver' : project.mapIdsToUsers()
+        }
+        self.response.write(template.render(template_values))
+
+class Admin(webapp2.RequestHandler):
+    def get(self):
+        projectId = self.request.get('id')
+        if not projectId:
+            self.redirect('/home')
+        projectKey = ndb.Key(urlsafe=projectId)
+        project = projectKey.get()
+        if not project:
+            self.redirect('/home')
+        user = users.get_current_user()
+        appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        if not appUser or appUser.key not in project.participants:
+            self.abort(401)
+        expenses = ettypes.Expense.queryByProjectKey(projectKey)
+        template = JINJA_ENVIRONMENT.get_template('templates/admin.html')
+        template_values = {
+            'logout_url'   : users.create_logout_url('/'),
+            'participants' : project.getAllParticipants(),
+            'expenses'     : expenses,
+            'id_resolver'  : project.mapIdsToUsers()
+        }
+        self.response.write(template.render(template_values))
+
 
 
 app = webapp2.WSGIApplication([
@@ -123,6 +243,7 @@ app = webapp2.WSGIApplication([
     ('/register', RegisterNewUser),
     ('/newproject', CreateNewProject),
     ('/project', ProjectHome),
-    ('/submit', Transaction)
+    ('/summary', Summary),
+    ('/admin', Admin)
 ], debug=True)
 

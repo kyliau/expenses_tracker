@@ -44,10 +44,11 @@ class AppUser(ndb.Model):
 
     @classmethod
     def createUnregisteredUser(cls, email):
-        newId = cls.allocate_ids(size=1)[0]
-        userKey = ndb.Key(cls, newId, parent=APPUSER_PARENT_KEY)
+        #newId = cls.allocate_ids(size=1)[0]
+        #userKey = ndb.Key(cls, newId, parent=APPUSER_PARENT_KEY)
         name = email.split('@')[0]
-        return cls(key=userKey,
+        return cls(parent=APPUSER_PARENT_KEY,
+                   key=userKey,
                    name=name,
                    email=email,
                    encoded_key=userKey.urlsafe())
@@ -93,7 +94,7 @@ class Project(ndb.Model):
         newId = cls.allocate_ids(size=1)[0]
         projectKey = ndb.Key(cls, newId, parent=PROJECT_PARENT_KEY)
         query_params = {'id': projectKey.urlsafe()}
-        projectUrl = '/project?' + urllib.urlencode(query_params);
+        projectUrl = urllib.urlencode(query_params);
         newProject = cls(key=projectKey,
                          name=name,
                          url=projectUrl,
@@ -106,24 +107,54 @@ class Project(ndb.Model):
     def getAllParticipants(self):
         return ndb.get_multi(self.participants)
 
+    def mapIdsToUsers(self):
+        return dict(zip(self.participants, self.getAllParticipants()))
 
 class IndividualAmount(ndb.Model):
     user   = ndb.KeyProperty(kind=AppUser, indexed=False, required=True)
     amount = ndb.FloatProperty(indexed=False, required=True)
 
-class Transaction(ndb.Model):
+class Expense(ndb.Model):
     paid_by           = ndb.KeyProperty(kind=AppUser, required=True)
     creation_date     = ndb.DateTimeProperty(auto_now_add=True)
     last_update       = ndb.DateTimeProperty(auto_now=True)
     transaction_date  = ndb.DateProperty(indexed=True, required=True)
-    description       = ndb.StringProperty(required=True)
+    details           = ndb.StringProperty(required=True)
     amount            = ndb.FloatProperty(required=True)
     split_equally     = ndb.BooleanProperty(default=False)
     individual_amount = ndb.StructuredProperty(IndividualAmount, repeated=True)
 
+    @classmethod
+    def addNewExpense(cls, paidBy, date, details, amount, splitEqually):
+        return cls(paid_by=paidBy,
+                   transaction_date=date,
+                   details=details,
+                   amount=amount,
+                   split_equally=splitEqually)
+
+    @classmethod
+    def queryByProjectKey(cls, projectKey):
+        query = cls.query(ancestor=projectKey).order(-Expense.transaction_date,
+                                                     -Expense.last_update)
+        return query.fetch()
+
 class Settings(ndb.Model):
     #project       = ndb.KeyProperty(kind=Project, required=True)
-    user          = ndb.KeyProperty(kind=AppUser, required=True)
+    #user          = ndb.KeyProperty(kind=AppUser, required=True)
     receive_email = ndb.StringProperty(choices=['all', 'relevant', 'none'],
                                        default='none')
+
+    @classmethod
+    def addNewSetting(cls, project, appUser):
+        projectKey = project.key
+        appUserKey = appUser.key
+        setting = cls(parent=ndb.Key(flat=projectKey.flat(), parent=appUserKey))
+        setting.put()
+        return setting
+
+    @classmethod
+    def getAllSettings(cls, appUser):
+        appUserKey = appUser.key
+        query = cls.query(ancestor=appUserKey)
+        return query.fetch()
 
