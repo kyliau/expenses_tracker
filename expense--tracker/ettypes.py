@@ -42,7 +42,6 @@ class AppUser(ndb.Model):
     projects      = ndb.KeyProperty(kind='Project', repeated=True)
     settings      = ndb.StructuredProperty(Settings, repeated=True)
     user_id       = ndb.StringProperty(indexed=True)
-    encoded_key   = ndb.StringProperty(indexed=True, required=True)
 
     @classmethod
     def queryByUserId(cls, user_id):
@@ -58,13 +57,8 @@ class AppUser(ndb.Model):
 
     @classmethod
     def createUnregisteredUser(cls, email):
-        newId = cls.allocate_ids(size=1)[0]
-        userKey = ndb.Key(cls, newId, parent=APPUSER_PARENT_KEY)
         name = email.split('@')[0]
-        return cls(key=userKey,
-                   name=name,
-                   email=email,
-                   encoded_key=userKey.urlsafe())
+        return cls(parent=APPUSER_PARENT_KEY, name=name, email=email)
 
     @classmethod
     def addRegisteredUser(cls, user, name):
@@ -86,6 +80,11 @@ class AppUser(ndb.Model):
             appUser = cls.queryByEmail(email)
             if appUser is None:
                 appUser = cls.createUnregisteredUser(email)
+                #we should really avoid calling put in a loop...
+                #but we need this to get a complete key
+                #cannot use allocate_ids because this is in a transaction
+                #not allowed to call allocate_ids in a transaction
+                appUser.put()
             assert appUser
             mapper[email] = appUser
         return mapper
@@ -103,7 +102,6 @@ class AppUser(ndb.Model):
 
 class Project(ndb.Model):
     name          = ndb.StringProperty(required=True)
-    url           = ndb.StringProperty()
     owner         = ndb.KeyProperty(kind=AppUser, indexed=True, required=True)
     creation_date = ndb.DateTimeProperty(auto_now_add=True)
     last_update   = ndb.DateTimeProperty(auto_now=True)
@@ -112,13 +110,8 @@ class Project(ndb.Model):
 
     @classmethod
     def addNewProject(cls, name, owner, participants, moderators):
-        newId = cls.allocate_ids(size=1)[0]
-        projectKey = ndb.Key(cls, newId, parent=PROJECT_PARENT_KEY)
-        query_params = {'id': projectKey.urlsafe()}
-        projectUrl = urllib.urlencode(query_params);
-        newProject = cls(key=projectKey,
+        newProject = cls(parent=PROJECT_PARENT_KEY,
                          name=name,
-                         url=projectUrl,
                          owner=owner,
                          participants=participants,
                          moderators=moderators)

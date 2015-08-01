@@ -1,34 +1,49 @@
 {% extends "templates/base.html" %}
 {% block container %}
 <h3>Settings</h3>
+<div class="alert alert-success" role="alert" style="display:none"></div>
+<div class="alert alert-danger" role="alert" style="display:none">Something went wrong... Please try again later.</div>
 <p>How often do you want to get notified when a new transaction is added to
    one of your projects?</p>
 <div>
-<table class="table table-hover">
-  <thead>
-    <tr>
-      <th>#</th>    
-      <th>Project</th>
-      <th></th>
-      <th>Receive Emails</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for project in projects %}
-    {% set frequency = settings[loop.index0].receive_email %}
-    <td>{{loop.index}}</td>
-    <td>{{project.name}}</td>
-    <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe()}}" value="all"      {% if frequency == "all" %}checked{% endif %}> All transactions</label></td>
-    <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe()}}" value="relevant" {% if frequency == "relevant" %}checked{% endif %}> Only transactions that involve me</label></td>
-    <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe()}}" value="none"     {% if frequency == "none" %}checked{% endif %}> Never</label></td>
-    {% endfor %}
-  </tbody>
-</table>
+<form method="post">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>#</th>    
+        <th>Project</th>
+        <th></th>
+        <th>Receive Emails</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in projects %}
+      {% set frequency = settings[loop.index0].receive_email %}
+      <tr>
+        <td>{{loop.index}}</td>
+        <td>{{project.name}}</td>
+        <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="all"      {% if frequency == "all" %}checked{% endif %}> All transactions</label></td>
+        <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="relevant" {% if frequency == "relevant" %}checked{% endif %}> Only transactions that involve me</label></td>
+        <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="none"     {% if frequency == "none" %}checked{% endif %}> Never</label></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="submit" class="btn btn-default">Save Settings</button>
+</form>
 </div>
 {% endblock %}
 {% block javascript %}
 <script>
+$('form').submit(function(e) {
+  $.post("/settings", $(this).serialize()).done(function(response) {
+    $(".alert-success").text(response).slideDown();
+  }).fail(function(response) {
+    $(".alert-danger").slideDown();
+  });
+  e.preventDefault();
+});
 </script>
 {% endblock %}
 {# vim:set tabstop=2 shiftwidth=2 softtabstop=2 expandtab: #}

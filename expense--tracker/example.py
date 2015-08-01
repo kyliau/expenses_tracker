@@ -58,9 +58,6 @@ class CreateNewProject(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
     #@ndb.transactional
-    #we need this to be transactional, but an application cannot call
-    #allocate_ids() in a transaction
-    #https://cloud.google.com/appengine/docs/python/ndb/modelclass#Model_allocate_ids
     def post(self):
         user = users.get_current_user()
         owner = ettypes.AppUser.queryByUserId(user.user_id())
@@ -165,7 +162,7 @@ class ProjectHome(webapp2.RequestHandler):
         expense.put()
         # check if we need to send the email
         #query_params = { 'id': projectKey.urlsafe() }
-        self.redirect('/summary?' + project.url)
+        self.redirect('/summary?' + project.key.urlsafe())
 
 def sendEmail(project, expense):
     # first get the settings for all participants in the projects
@@ -202,7 +199,7 @@ class Summary(webapp2.RequestHandler):
             message = 'All dues are clear'
             alertType = 'alert-success'
         elif amountOwed > 0:
-            message = "%s owes Auntie Terry %s".format(appUser.name, amtString)
+            message = "{} owes Auntie Terry {}".format(appUser.name, amtString)
         else:
             message = 'Auntie Terry owes %s %s' % (appUser.name, amtString)
 
@@ -256,6 +253,21 @@ class Settings(webapp2.RequestHandler):
         }
         self.response.write(template.render(template_values))
 
+    def post(self):
+        user = users.get_current_user()
+        appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        if not appUser:
+            self.abort(401)
+        settingsChanged = False
+        for index, project in enumerate(appUser.projects):
+            existingEmailOption = appUser.settings[index]
+            emailOption = self.request.get(project.urlsafe() + "_email")
+            if emailOption in ["all", "relevant", "none"] and emailOption != existingEmailOption.receive_email:
+                existingEmailOption.receive_email = emailOption
+                settingsChanged = True
+        if settingsChanged:
+            appUser.put()
+        self.response.write("Success! Your settings have been updated.")
 
 app = webapp2.WSGIApplication([
     ('/home', MainPage),
