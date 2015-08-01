@@ -21,12 +21,26 @@ from google.appengine.ext import ndb
 APPUSER_PARENT_KEY = ndb.Key("AppUser", "DEFAULT_KEY")
 PROJECT_PARENT_KEY = ndb.Key("Project", "DEFAULT_KEY")
 
+class Settings(ndb.Model):
+    #project       = ndb.KeyProperty(kind=Project, required=True)
+    #user          = ndb.KeyProperty(kind=AppUser, required=True)
+    receive_email = ndb.StringProperty(choices=['all', 'relevant', 'none'],
+                                       default='none')
+
+    @classmethod
+    def createNewSettings(cls, project, appUsers):
+        def createNewSetting(appUser):
+            key = ndb.Key(flat=project.key.flat(), parent=appUser.key)
+            return cls(parent=key)
+        return map(createNewSetting, appUsers)
+
 class AppUser(ndb.Model):
     name          = ndb.StringProperty(required=True)
     email         = ndb.StringProperty(required=True)
     last_update   = ndb.DateTimeProperty(auto_now=True)
     creation_date = ndb.DateTimeProperty(auto_now_add=True)
     projects      = ndb.KeyProperty(kind='Project', repeated=True)
+    settings      = ndb.StructuredProperty(Settings, repeated=True)
     user_id       = ndb.StringProperty(indexed=True)
     encoded_key   = ndb.StringProperty(indexed=True, required=True)
 
@@ -44,11 +58,10 @@ class AppUser(ndb.Model):
 
     @classmethod
     def createUnregisteredUser(cls, email):
-        #newId = cls.allocate_ids(size=1)[0]
-        #userKey = ndb.Key(cls, newId, parent=APPUSER_PARENT_KEY)
+        newId = cls.allocate_ids(size=1)[0]
+        userKey = ndb.Key(cls, newId, parent=APPUSER_PARENT_KEY)
         name = email.split('@')[0]
-        return cls(parent=APPUSER_PARENT_KEY,
-                   key=userKey,
+        return cls(key=userKey,
                    name=name,
                    email=email,
                    encoded_key=userKey.urlsafe())
@@ -79,6 +92,14 @@ class AppUser(ndb.Model):
 
     def getAllProjects(self):
         return ndb.get_multi(self.projects)
+
+    def getAllSettings(self):
+        return self.settings
+
+    def addProject(self, project):
+        self.projects.append(project.key)
+        #need to add settings for the project as well
+        self.settings.append(Settings())
 
 class Project(ndb.Model):
     name          = ndb.StringProperty(required=True)
@@ -136,25 +157,5 @@ class Expense(ndb.Model):
     def queryByProjectKey(cls, projectKey):
         query = cls.query(ancestor=projectKey).order(-Expense.transaction_date,
                                                      -Expense.last_update)
-        return query.fetch()
-
-class Settings(ndb.Model):
-    #project       = ndb.KeyProperty(kind=Project, required=True)
-    #user          = ndb.KeyProperty(kind=AppUser, required=True)
-    receive_email = ndb.StringProperty(choices=['all', 'relevant', 'none'],
-                                       default='none')
-
-    @classmethod
-    def addNewSetting(cls, project, appUser):
-        projectKey = project.key
-        appUserKey = appUser.key
-        setting = cls(parent=ndb.Key(flat=projectKey.flat(), parent=appUserKey))
-        setting.put()
-        return setting
-
-    @classmethod
-    def getAllSettings(cls, appUser):
-        appUserKey = appUser.key
-        query = cls.query(ancestor=appUserKey)
         return query.fetch()
 

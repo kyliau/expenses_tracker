@@ -22,8 +22,8 @@
           <td>{{ expense.transaction_date.strftime('%Y-%m-%d') }}</td>
           <td>{{ expense.details }}</td>
           <td>{{ id_resolver[expense.paid_by].name }}</td>
-          <td>{% if expense.paid_by == user_key %}{{ "$ {:.2f}".format(expense.amount) }}{% endif %}</td>
-          <td>{% if amount > 0 %}{{ "$ {:.2f}".format(amount) }}{% endif %}</td>
+          <td>{% if expense.paid_by == user_key %}{{ "${:.2f}".format(expense.amount) }}{% endif %}</td>
+          <td>{% if amount > 0 %}{{ "${:.2f}".format(amount) }}{% endif %}</td>
         </tr>
           {% endif %}
         {% endfor %}
@@ -34,8 +34,8 @@
           <th></th>
           <th></th>
           <th>Total</th>
-          <th>{{ "$ {:.2f}".format(total_paid)  }}</th>
-          <th>{{ "$ {:.2f}".format(total_spent) }}</th>
+          <th>{{ "${:.2f}".format(total_paid)  }}</th>
+          <th>{{ "${:.2f}".format(total_spent) }}</th>
         </tr>
       </tfoot>
     </table>

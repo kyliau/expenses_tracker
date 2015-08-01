@@ -57,6 +57,10 @@ class CreateNewProject(webapp2.RequestHandler):
         }
         self.response.write(template.render(template_values))
 
+    #@ndb.transactional
+    #we need this to be transactional, but an application cannot call
+    #allocate_ids() in a transaction
+    #https://cloud.google.com/appengine/docs/python/ndb/modelclass#Model_allocate_ids
     def post(self):
         user = users.get_current_user()
         owner = ettypes.AppUser.queryByUserId(user.user_id())
@@ -93,8 +97,10 @@ class CreateNewProject(webapp2.RequestHandler):
                                                    moderatorKeys)
         assert newProject
         for participant in participatingUsers:
-            participant.projects.append(newProject.key)
+            participant.addProject(newProject)
         ndb.put_multi(participatingUsers)
+        #settings = ettypes.Settings.createNewSettings(newProject, participatingUsers)
+        #ndb.put_multi(settings)
         self.redirect('/home')
 
 class ProjectHome(webapp2.RequestHandler):
@@ -108,8 +114,8 @@ class ProjectHome(webapp2.RequestHandler):
             self.redirect('/home')
         user = users.get_current_user()
         appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        print ettypes.Settings.addNewSetting(project, appUser)
-        print ettypes.Settings.getAllSettings(appUser)
+        #print ettypes.Settings.addNewSetting(project, appUser)
+        #print ettypes.Settings.getAllSettings(appUser)
         if not appUser or appUser.key not in project.participants:
             self.abort(401)
         template = JINJA_ENVIRONMENT.get_template('templates/project.html')
@@ -158,7 +164,7 @@ class ProjectHome(webapp2.RequestHandler):
         assert abs(totalAmount - amount) < 0.01
         expense.put()
         # check if we need to send the email
-        query_params = { 'id': projectKey.urlsafe() }
+        #query_params = { 'id': projectKey.urlsafe() }
         self.redirect('/summary?' + project.url)
 
 def sendEmail(project, expense):
@@ -191,13 +197,14 @@ class Summary(webapp2.RequestHandler):
         amountOwed = totalSpent - totalPaid        
         message = ''
         alertType = 'alert-info'
+        amtString = "${:.2f}".format(abs(amountOwed))
         if abs(amountOwed) < 0.05:
             message = 'All dues are clear'
             alertType = 'alert-success'
         elif amountOwed > 0:
-            message = '%s owes Auntie Terry %s' % (appUser.name, "$ {:.2f}".format(amountOwed))
+            message = "%s owes Auntie Terry %s".format(appUser.name, amtString)
         else:
-            message = 'Auntie Terry owes %s %s' % (appUser.name, "$ {:.2f}".format(abs(amountOwed)))
+            message = 'Auntie Terry owes %s %s' % (appUser.name, amtString)
 
         template = JINJA_ENVIRONMENT.get_template('templates/summary.html')
         template_values = {
@@ -236,6 +243,18 @@ class Admin(webapp2.RequestHandler):
         }
         self.response.write(template.render(template_values))
 
+class Settings(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        if not appUser:
+            self.abort(401)
+        template = JINJA_ENVIRONMENT.get_template("templates/settings.html")
+        template_values = {
+            "projects" : appUser.getAllProjects(),
+            "settings" : appUser.settings
+        }
+        self.response.write(template.render(template_values))
 
 
 app = webapp2.WSGIApplication([
@@ -244,6 +263,7 @@ app = webapp2.WSGIApplication([
     ('/newproject', CreateNewProject),
     ('/project', ProjectHome),
     ('/summary', Summary),
-    ('/admin', Admin)
+    ('/admin', Admin),
+    ('/settings', Settings)
 ], debug=True)
 
