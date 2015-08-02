@@ -3,6 +3,7 @@ import urllib
 import json
 import ettypes
 
+from google.appengine.api import mail
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from datetime import datetime
@@ -61,7 +62,8 @@ class CreateNewProject(webapp2.RequestHandler):
     def post(self):
         user = users.get_current_user()
         owner = ettypes.AppUser.queryByUserId(user.user_id())
-        assert owner
+        if not owner:
+            self.abort(401)
 
         projectName     = self.request.get('project_name')
         numParticipants = float(self.request.get('num_participants', 0))
@@ -69,6 +71,7 @@ class CreateNewProject(webapp2.RequestHandler):
         moderators      = self.request.get('moderators')
         numModerators   = float(self.request.get('num_moderators', 0))
         assert projectName
+    
         if numParticipants > 0:
             participants = participants.split(',')
             assert len(participants) == numParticipants
@@ -93,6 +96,7 @@ class CreateNewProject(webapp2.RequestHandler):
                                                    participantKeys,
                                                    moderatorKeys)
         assert newProject
+
         for participant in participatingUsers:
             participant.addProject(newProject)
         ndb.put_multi(participatingUsers)
@@ -111,8 +115,6 @@ class ProjectHome(webapp2.RequestHandler):
             self.redirect('/home')
         user = users.get_current_user()
         appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        #print ettypes.Settings.addNewSetting(project, appUser)
-        #print ettypes.Settings.getAllSettings(appUser)
         if not appUser or appUser.key not in project.participants:
             self.abort(401)
         template = JINJA_ENVIRONMENT.get_template('templates/project.html')
@@ -145,6 +147,7 @@ class ProjectHome(webapp2.RequestHandler):
 
         transactionDate = datetime.strptime(date, "%Y-%m-%d")
 
+        # TODO: abstract this out in the model instead..
         expense = ettypes.Expense(parent=projectKey,
                                   paid_by=paidByKey,
                                   transaction_date=transactionDate,
@@ -152,21 +155,60 @@ class ProjectHome(webapp2.RequestHandler):
                                   amount=amount,
                                   split_equally=(splitEqually=="on"))
         totalAmount = 0
+        userKeyToAmountMap = {}
         for participant in project.participants:
             amt = float(self.request.get(participant.urlsafe(), 0) or 0)
             assert amt >= 0
             totalAmount += amt
+            userKeyToAmountMap[participant] = amt
             indvAmt = ettypes.IndividualAmount(user=participant, amount=amt)
             expense.individual_amount.append(indvAmt)
         assert abs(totalAmount - amount) < 0.01
         expense.put()
         # check if we need to send the email
-        #query_params = { 'id': projectKey.urlsafe() }
-        self.redirect('/summary?' + project.key.urlsafe())
+        sendEmail(project, expense, userKeyToAmountMap)
+        self.redirect('/summary?id=' + project.key.urlsafe())
 
-def sendEmail(project, expense):
-    # first get the settings for all participants in the projects
-    pass
+def sendEmail(project, expense, userKeyToAmountMap):
+    paidBy = expense.paid_by.get()
+    message = mail.EmailMessage()
+    message.sender = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
+    message.subject = "[{}] {} paid ${:.2f} for {}".format(project.name,
+                                                           paidBy.name,
+                                                           expense.amount,
+                                                           expense.details)
+    body = """
+Project : {}
+Date    : {}
+Amount  : ${:.2f}
+Details : {}
+Paid By : {}""".format(project.name,
+                       expense.transaction_date,
+                       expense.amount,
+                       expense.details,
+                       paidBy.name)
+
+    usersInvolved = []
+    for participant in project.getAllParticipants():
+        assert project.key in participant.projects
+        # doing a linear search here... We could do better
+        index = participant.projects.index(project.key)
+        emailOption = participant.settings[index].receive_email
+        assert emailOption in ["all", "relevant", "none"]
+        amount = userKeyToAmountMap[participant.key]
+        assert amount >= 0
+        if amount > 0:
+            body += "\n{} Amount : ${:.2f}".format(participant.name, amount)
+        isPayer = (expense.paid_by == participant.key)
+        if (emailOption == "all" or
+           (emailOption == "relevant" and (isPayer or amount > 0))):
+            usersInvolved.append(participant)
+
+    for appUser in usersInvolved:
+            message.to = "{} <{}>".format(participant.name, participant.email)
+            message.body = body
+            message.html = "<pre>{}</pre>".format(body)
+            message.send()
 
 class Summary(webapp2.RequestHandler):
     def get(self):
