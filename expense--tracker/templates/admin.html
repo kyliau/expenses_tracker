@@ -24,10 +24,10 @@
           <th scope="row">{{ loop.index }}</th>
           <td>{{ expense.transaction_date.strftime('%Y-%m-%d') }}</td>
           <td>{{ expense.details }}</td>
-          <td>{{ "$ {:.2f}".format(expense.amount) }}</td>
+          <td>{{ "${:.2f}".format(expense.amount) }}</td>
           <td>{{ id_resolver[expense.paid_by].name }}</td>
           {% for indvamt in expense.individual_amount %}
-          <td>{% if indvamt.amount > 0 %}{{ "$ {:.2f}".format(indvamt.amount) }}{% endif %}</td>
+          <td>{% if indvamt.amount > 0 %}{{ "${:.2f}".format(indvamt.amount) }}{% endif %}</td>
           {% endfor %}
           {% if is_moderator %}
           <td><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true" title="Click to delete this transaction" data-id="{{expense.key.urlsafe()}}" data-details="{{expense.details}}"></span></td>
