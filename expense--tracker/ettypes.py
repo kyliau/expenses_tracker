@@ -100,6 +100,16 @@ class AppUser(ndb.Model):
         #need to add settings for the project as well
         self.settings.append(Settings())
 
+    def getSettingsForProject(self, project):
+        try:
+            # doing a linear search here... We might be able to do better
+            # with a better schema
+            index = self.projects.index(project.key)
+            return self.settings[index]
+        except ValueError:
+            # TODO: we need to log the error here
+            return None
+
 class Project(ndb.Model):
     name          = ndb.StringProperty(required=True)
     owner         = ndb.KeyProperty(kind=AppUser, indexed=True, required=True)
@@ -138,13 +148,13 @@ class Expense(ndb.Model):
     split_equally     = ndb.BooleanProperty(default=False)
     individual_amount = ndb.StructuredProperty(IndividualAmount, repeated=True)
 
-    @classmethod
-    def addNewExpense(cls, paidBy, date, details, amount, splitEqually):
-        return cls(paid_by=paidBy,
-                   transaction_date=date,
-                   details=details,
-                   amount=amount,
-                   split_equally=splitEqually)
+    #@classmethod
+    #def addNewExpense(cls, paidBy, date, details, amount, splitEqually):
+    #    return cls(paid_by=paidBy,
+    #               transaction_date=date,
+    #               details=details,
+    #               amount=amount,
+    #               split_equally=splitEqually)
 
     @classmethod
     def queryByProjectKey(cls, projectKey):

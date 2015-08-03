@@ -23,9 +23,10 @@ class MainPage(webapp2.RequestHandler):
         if appUser:
             projects = appUser.getAllProjects()
             template_values = {
-                'logout_url' : users.create_logout_url('/'),
-                'name'       : appUser.name,
-                'projects'   : appUser.getAllProjects()
+                'current_page' : "Home",
+                'logout_url'   : users.create_logout_url('/'),
+                'name'         : appUser.name,
+                'projects'     : appUser.getAllProjects()
             }
             template = JINJA_ENVIRONMENT.get_template('templates/home.html')
             self.response.write(template.render(template_values))
@@ -54,7 +55,8 @@ class CreateNewProject(webapp2.RequestHandler):
     def get(self):
         template = JINJA_ENVIRONMENT.get_template('templates/newproject.html')
         template_values = {
-            'logout_url' : users.create_logout_url('/')
+            'current_page' : "Home",
+            'logout_url'   : users.create_logout_url('/')
         }
         self.response.write(template.render(template_values))
 
@@ -87,6 +89,10 @@ class CreateNewProject(webapp2.RequestHandler):
         participants.append(owner.email)
         moderators.append(owner.email)
 
+        # need to make sure the list is unique
+        participants = list(set(participants))
+        moderators = list(set(moderators))
+
         mapper = ettypes.AppUser.mapEmailsToUsers(participants)
         participatingUsers = mapper.values()
         participantKeys = map(lambda user: user.key, participatingUsers)
@@ -109,8 +115,11 @@ class ProjectHome(webapp2.RequestHandler):
         projectId = self.request.get('id')
         if not projectId:
             self.redirect('/home')
-        projectKey = ndb.Key(urlsafe=projectId)
-        project = projectKey.get()
+        try:
+            projectKey = ndb.Key(urlsafe=projectId)
+            project = projectKey.get()
+        except:
+            self.abort(401)
         if not project:
             self.redirect('/home')
         user = users.get_current_user()
@@ -119,6 +128,7 @@ class ProjectHome(webapp2.RequestHandler):
             self.abort(401)
         template = JINJA_ENVIRONMENT.get_template('templates/project.html')
         template_values = {
+            'current_page' : "Home",
             'project_key'  : projectKey.urlsafe(),
             'logout_url'   : users.create_logout_url('/'),
             'participants' : project.getAllParticipants(),
@@ -136,6 +146,7 @@ class ProjectHome(webapp2.RequestHandler):
         splitEqually = self.request.get('split_equally')
         splitWith    = self.request.get('split_with')
 
+        #TODO data validation!
         assert amount > 0
 
         projectKey = ndb.Key(urlsafe=encodedKey)
@@ -155,21 +166,19 @@ class ProjectHome(webapp2.RequestHandler):
                                   amount=amount,
                                   split_equally=(splitEqually=="on"))
         totalAmount = 0
-        userKeyToAmountMap = {}
         for participant in project.participants:
             amt = float(self.request.get(participant.urlsafe(), 0) or 0)
             assert amt >= 0
             totalAmount += amt
-            userKeyToAmountMap[participant] = amt
             indvAmt = ettypes.IndividualAmount(user=participant, amount=amt)
             expense.individual_amount.append(indvAmt)
         assert abs(totalAmount - amount) < 0.01
         expense.put()
         # check if we need to send the email
-        sendEmail(project, expense, userKeyToAmountMap)
+        sendEmail(project, expense)
         self.redirect('/summary?id=' + project.key.urlsafe())
 
-def sendEmail(project, expense, userKeyToAmountMap):
+def sendEmail(project, expense):
     paidBy = expense.paid_by.get()
     message = mail.EmailMessage()
     message.sender = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
@@ -182,23 +191,32 @@ Project : {}
 Date    : {}
 Amount  : ${:.2f}
 Details : {}
-Paid By : {}""".format(project.name,
+Paid By : {}
+Split with :
+------------""".format(project.name,
                        expense.transaction_date,
                        expense.amount,
                        expense.details,
                        paidBy.name)
 
+    # we need to build a map of userKey to the amount of the user
+    def buildMap(result, indvAmt):
+        result[indvAmt.user] = indvAmt.amount
+        return result
+    userKeyToAmountMap = reduce(buildMap, expense.individual_amount, {})
+
     usersInvolved = []
+    # build the message body
     for participant in project.getAllParticipants():
         assert project.key in participant.projects
-        # doing a linear search here... We could do better
-        index = participant.projects.index(project.key)
-        emailOption = participant.settings[index].receive_email
+
+        emailOption = participant.getSettingsForProject(project).receive_email
         assert emailOption in ["all", "relevant", "none"]
+
         amount = userKeyToAmountMap[participant.key]
         assert amount >= 0
         if amount > 0:
-            body += "\n{} Amount : ${:.2f}".format(participant.name, amount)
+            body += "\n{} : ${:.2f}".format(participant.name, amount)
         isPayer = (expense.paid_by == participant.key)
         if (emailOption == "all" or
            (emailOption == "relevant" and (isPayer or amount > 0))):
@@ -215,8 +233,11 @@ class Summary(webapp2.RequestHandler):
         projectId = self.request.get('id')
         if not projectId:
             self.redirect('/home')
-        projectKey = ndb.Key(urlsafe=projectId)
-        project = projectKey.get()
+        try:
+            projectKey = ndb.Key(urlsafe=projectId)
+            project = projectKey.get()
+        except TypeError:
+            self.redirect('/home')
         if not project:
             self.redirect('/home')
         user = users.get_current_user()
@@ -247,15 +268,17 @@ class Summary(webapp2.RequestHandler):
 
         template = JINJA_ENVIRONMENT.get_template('templates/summary.html')
         template_values = {
-            'message'     : message,
-            'alert_type'  : alertType,
-            'logout_url'  : users.create_logout_url('/'),
-            'user_key'    : appUser.key,
-            'expenses'    : expenses,
-            'index'       : index,
-            'total_paid'  : totalPaid,
-            'total_spent' : totalSpent,
-            'id_resolver' : project.mapIdsToUsers()
+            'project_key'  : projectKey.urlsafe(),
+            'message'      : message,
+            'alert_type'   : alertType,
+            #'current_page' : "Home",
+            'logout_url'   : users.create_logout_url('/'),
+            'user_key'     : appUser.key,
+            'expenses'     : expenses,
+            'index'        : index,
+            'total_paid'   : totalPaid,
+            'total_spent'  : totalSpent,
+            'id_resolver'  : project.mapIdsToUsers()
         }
         self.response.write(template.render(template_values))
 
@@ -272,15 +295,38 @@ class Admin(webapp2.RequestHandler):
         appUser = ettypes.AppUser.queryByUserId(user.user_id())
         if not appUser or appUser.key not in project.participants:
             self.abort(401)
+        isModerator = (appUser.key in project.moderators)
         expenses = ettypes.Expense.queryByProjectKey(projectKey)
         template = JINJA_ENVIRONMENT.get_template('templates/admin.html')
         template_values = {
+            #'current_page' : "Home",
+            'project_key'  : projectKey.urlsafe(),
             'logout_url'   : users.create_logout_url('/'),
             'participants' : project.getAllParticipants(),
             'expenses'     : expenses,
-            'id_resolver'  : project.mapIdsToUsers()
+            'id_resolver'  : project.mapIdsToUsers(),
+            'is_moderator' : isModerator
         }
         self.response.write(template.render(template_values))
+
+    def post(self):
+        expenseId = self.request.get("to_delete")
+        if not expenseId:
+            self.response.write("Request is invalid")
+        expenseKey = ndb.Key(urlsafe=expenseId)
+        expense = expenseKey.get()
+        if not expense:
+            self.response.write("Request is invalid")
+        project = expenseKey.parent().get()
+        if not project:
+            self.response.write("Request is invalid")
+        user = users.get_current_user()
+        appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        if appUser.key not in project.moderators:
+            self.abort(401, detail="User is not authorized")
+        expenseKey.delete()
+        print expense
+        self.response.write("Deleted " + expense.details)
 
 class Settings(webapp2.RequestHandler):
     def get(self):
@@ -290,8 +336,11 @@ class Settings(webapp2.RequestHandler):
             self.abort(401)
         template = JINJA_ENVIRONMENT.get_template("templates/settings.html")
         template_values = {
-            "projects" : appUser.getAllProjects(),
-            "settings" : appUser.settings
+            "current_page" : "Settings",
+            "logout_url"   : users.create_logout_url('/'),
+            "projects"     : appUser.getAllProjects(),
+            "settings"     : appUser.settings,
+            "app_user"     : appUser
         }
         self.response.write(template.render(template_values))
 

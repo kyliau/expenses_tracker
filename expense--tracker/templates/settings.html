@@ -3,18 +3,29 @@
 <h3>Settings</h3>
 <div class="alert alert-success" role="alert" style="display:none"></div>
 <div class="alert alert-danger" role="alert" style="display:none">Something went wrong... Please try again later.</div>
+
+<div class="input-group disabled">
+  <span class="input-group-addon">Name</span>
+  <input type="text" class="form-control" placeholder="Name" value="{{app_user.name}}" disabled>
+</div>
+<br>
+<div class="input-group disabled">
+  <span class="input-group-addon">Email</span>
+  <input type="email" class="form-control" placeholder="Email" value="{{app_user.email}}" disabled>
+</div>
+<br>
+
 <p>How often do you want to get notified when a new transaction is added to
    one of your projects?</p>
 <div>
-<form method="post">
+<div>
+<form id="project-settings" method="post">
   <table class="table table-hover">
     <thead>
       <tr>
         <th>#</th>    
         <th>Project</th>
-        <th></th>
         <th>Receive Emails</th>
-        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -23,26 +34,41 @@
       <tr>
         <td>{{loop.index}}</td>
         <td>{{project.name}}</td>
-        <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="all"      {% if frequency == "all" %}checked{% endif %}> All transactions</label></td>
-        <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="relevant" {% if frequency == "relevant" %}checked{% endif %}> Only transactions that involve me</label></td>
-        <td><label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="none"     {% if frequency == "none" %}checked{% endif %}> Never</label></td>
+        <td>
+          <div class="radio">
+            <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="all" {% if frequency == "all" %}checked{% endif %}> All transactions</label>
+          </div>
+          <div class="radio">
+            <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="relevant" {% if frequency == "relevant" %}checked{% endif %}> Only transactions that involve me</label>
+          </div>
+          <div class="radio">
+            <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="none" {% if frequency == "none" %}checked{% endif %}> Never</label>
+          </div>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
-  <button type="submit" class="btn btn-default">Save Settings</button>
+  <button type="submit" class="btn btn-default" disabled>Save Settings</button>
 </form>
 </div>
 {% endblock %}
 {% block javascript %}
 <script>
-$('form').submit(function(e) {
-  $.post("/settings", $(this).serialize()).done(function(response) {
-    $(".alert-success").text(response).slideDown();
-  }).fail(function(response) {
-    $(".alert-danger").slideDown();
+$(document).ready(function() {
+  var form = $("#project-settings");
+  var initialData = form.serialize();
+  form.change(function() {
+    var newData = form.serialize();
+    $("button[type=submit]").prop("disabled", newData === initialData);
+  }).submit(function(e) {
+    $.post("/settings", $(this).serialize()).done(function(response) {
+      $(".alert-success").text(response).slideDown();
+    }).fail(function(response) {
+      $(".alert-danger").slideDown();
+    });
+    e.preventDefault();
   });
-  e.preventDefault();
 });
 </script>
 {% endblock %}

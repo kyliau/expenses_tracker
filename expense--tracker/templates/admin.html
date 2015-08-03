@@ -1,4 +1,8 @@
 {% extends "templates/base.html" %}
+{% block navbar %}
+<li><a href="/summary?id={{project_key}}">Summary</a></li>
+<li class="active"><a href="/admin?id={{project_key}}">Admin</a></li>
+{% endblock %}
 {% block container %}
     <table class="table table-hover">
       <thead>
@@ -11,6 +15,7 @@
           {% for participant in participants %}
           <th>{{ participant.name }}</td>
           {% endfor %}
+          {%if is_moderator %}<th></th>{%endif%}
         </tr>
       </thead>
       <tbody>
@@ -24,6 +29,9 @@
           {% for indvamt in expense.individual_amount %}
           <td>{% if indvamt.amount > 0 %}{{ "$ {:.2f}".format(indvamt.amount) }}{% endif %}</td>
           {% endfor %}
+          {% if is_moderator %}
+          <td><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true" title="Click to delete this transaction" data-id="{{expense.key.urlsafe()}}" data-details="{{expense.details}}"></span></td>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
@@ -31,6 +39,23 @@
 {% endblock %}
 {% block javascript %}
 <script>
+$(document).ready(function() {
+  $(".glyphicon-remove").click(function() {
+    var data = { to_delete : $(this).data("id") };
+    var self = this;
+    var message = "Are you sure you want to delete the transaction '" + $(this).data("details") + "'?";
+    var flag = confirm(message);
+    if (!flag) {
+      return;
+    }
+    $.post('/admin', data).done(function(response) {
+      console.log(response);
+      $(self).closest("tr").hide();
+    }).fail(function(response) {
+      alert("Something went wrong..." + JSON.stringify(response));
+    });
+  });
+});
 </script>
 {% endblock %}
 {# vim:set tabstop=2 shiftwidth=2 softtabstop=2 expandtab: #}
