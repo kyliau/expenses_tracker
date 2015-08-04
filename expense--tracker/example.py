@@ -108,7 +108,10 @@ class CreateNewProject(webapp2.RequestHandler):
         ndb.put_multi(participatingUsers)
         #settings = ettypes.Settings.createNewSettings(newProject, participatingUsers)
         #ndb.put_multi(settings)
-        self.redirect('/home')
+        query_params = {
+            'id' : newProject.key.urlsafe()
+        }
+        self.redirect('project?' + urllib.urlencode(query_params))
 
 class ProjectHome(webapp2.RequestHandler):
     def get(self):
@@ -129,7 +132,7 @@ class ProjectHome(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('templates/project.html')
         template_values = {
             'current_page' : "Home",
-            'project_key'  : projectKey.urlsafe(),
+            'project'      : project,
             'logout_url'   : users.create_logout_url('/'),
             'participants' : project.getAllParticipants(),
             'current_user' : appUser
