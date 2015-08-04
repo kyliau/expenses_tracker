@@ -299,7 +299,7 @@ class Admin(webapp2.RequestHandler):
         expenses = ettypes.Expense.queryByProjectKey(projectKey)
         template = JINJA_ENVIRONMENT.get_template('templates/admin.html')
         template_values = {
-            #'current_page' : "Home",
+            'current_page' : "Admin",
             'project_key'  : projectKey.urlsafe(),
             'logout_url'   : users.create_logout_url('/'),
             'participants' : project.getAllParticipants(),
