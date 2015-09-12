@@ -1,0 +1,9 @@
+Project : {{ project_name                     }}
+Date    : {{ expense.transaction_date         }}
+Amount  : {{ "${:.2f}".format(expense.amount) }}
+Details : {{ expense.details                  }}
+Paid By : {{ payer                            }}
+Split with :
+{%- for split in splits %}
+    {{ split.name }} : {{ split.amount }}
+{%- endfor %}
