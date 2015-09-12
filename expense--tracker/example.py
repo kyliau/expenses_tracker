@@ -106,12 +106,31 @@ class CreateNewProject(webapp2.RequestHandler):
         for participant in participatingUsers:
             participant.addProject(newProject)
         ndb.put_multi(participatingUsers)
+
+        notifyAllParticipants = self.request.get('notify_all_participants')
+        if notifyAllParticipants:
+            sendNewProjectEmail(newProject, owner)
         #settings = ettypes.Settings.createNewSettings(newProject, participatingUsers)
         #ndb.put_multi(settings)
         query_params = {
             'id' : newProject.key.urlsafe()
         }
         self.redirect('project?' + urllib.urlencode(query_params))
+
+def sendNewProjectEmail(project, owner):
+    template_values = {
+
+    }
+    message = mail.EmailMessage()
+    message.sender = "Expense Tracker <admin@expense--tracker.appspot.com>"
+    message.subject = "[Expense Tracker] {} added to a project {}!".format(owner.name,
+                                                                           project.name)
+    template = JINJA_ENVIRONMENT.get_template('templates/newProjectEmail.html')
+    message.body = template.render(template_values)
+
+    print message.subject
+    print message.body
+
 
 class ProjectHome(webapp2.RequestHandler):
     def get(self):
@@ -185,22 +204,21 @@ def sendEmail(project, expense):
     paidBy = expense.paid_by.get()
     message = mail.EmailMessage()
     message.sender = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
-    message.subject = "[{}] {} paid ${:.2f} for {}".format(project.name,
-                                                           paidBy.name,
-                                                           expense.amount,
-                                                           expense.details)
-    body = """
-Project : {}
-Date    : {}
-Amount  : ${:.2f}
-Details : {}
-Paid By : {}
-Split with :
-------------""".format(project.name,
-                       expense.transaction_date,
-                       expense.amount,
-                       expense.details,
-                       paidBy.name)
+    subject = "[{}] {} paid ${:.2f} for {}"
+    message.subject = subject.format(project.name,
+                                     paidBy.name,
+                                     expense.amount,
+                                     expense.details)
+    template_values = {
+        'project_name' : project.name,
+        'payer'        : paidBy.name,
+        'expense'      : {
+            'transaction_date' : expense.transaction_date,
+            'amount'           : expense.amount,
+            'details'          : expense.details
+        },
+        'splits' : []
+    }
 
     # we need to build a map of userKey to the amount of the user
     def buildMap(result, indvAmt):
@@ -219,17 +237,25 @@ Split with :
         amount = userKeyToAmountMap[participant.key]
         assert amount >= 0
         if amount > 0:
-            body += "\n{} : ${:.2f}".format(participant.name, amount)
+            template_values["splits"].append({
+                "name"   : participant.name,
+                "amount" : amount
+            })
+
+            #body += "\n{} : ${:.2f}".format(participant.name, amount)
         isPayer = (expense.paid_by == participant.key)
         if (emailOption == "all" or
            (emailOption == "relevant" and (isPayer or amount > 0))):
             usersInvolved.append(participant)
 
+    template = JINJA_ENVIRONMENT.get_template("templates/newTransactionEmail.html")
+    message.body = template.render(template_values)
     for appUser in usersInvolved:
             message.to = "{} <{}>".format(participant.name, participant.email)
-            message.body = body
-            message.html = "<pre>{}</pre>".format(body)
+            #message.body = body
+            #message.html = "<pre>{}</pre>".format(body)
             message.send()
+    print message.body
 
 class Summary(webapp2.RequestHandler):
     def get(self):
