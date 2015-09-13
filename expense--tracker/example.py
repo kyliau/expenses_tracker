@@ -130,6 +130,8 @@ def sendNewProjectEmail(project, owner, participants):
     template = JINJA_ENVIRONMENT.get_template('templates/newProjectEmail.html')
 
     for participant in participants:
+        if participant is owner:
+            continue    # don't send email to owner of the project
         template_values["name"]         = participant.name
         template_values["is_moderator"] = participant.key in project.moderators
         message.to   = "{} <{}>".format(participant.name, participant.email)
