@@ -1,7 +1,7 @@
-Hello {name}!
+Hello {{name}}!
 
-{Someone} added you as a {Participant|Moderator} to the {Project Name} project on <a href="{url}">Expenses Tracker</a>!
+{{owner}} added you as a {{ "moderator" if is_moderator else "participant" }} to the <a href="https://expense--tracker.appspot.com/project?id={{project_id}}">{{ project_name }}</a> project on Expense Tracker.
 
-Check it out here {Project Name}.
+Please create an account if it is your first time visiting the site.
 
-Thanks for using Expenses Tracker!
+Thanks for using <a href="https://expense--tracker.appspot.com/">Expense Tracker</a>.

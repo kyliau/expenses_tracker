@@ -109,7 +109,7 @@ class CreateNewProject(webapp2.RequestHandler):
 
         notifyAllParticipants = self.request.get('notify_all_participants')
         if notifyAllParticipants:
-            sendNewProjectEmail(newProject, owner)
+            sendNewProjectEmail(newProject, owner, participatingUsers)
         #settings = ettypes.Settings.createNewSettings(newProject, participatingUsers)
         #ndb.put_multi(settings)
         query_params = {
@@ -117,19 +117,24 @@ class CreateNewProject(webapp2.RequestHandler):
         }
         self.redirect('project?' + urllib.urlencode(query_params))
 
-def sendNewProjectEmail(project, owner):
+def sendNewProjectEmail(project, owner, participants):
     template_values = {
-
+        "owner"        : owner.name,
+        "project_name" : project.name,
+        "project_id"   : project.key.urlsafe()
     }
     message = mail.EmailMessage()
     message.sender = "Expense Tracker <admin@expense--tracker.appspot.com>"
-    message.subject = "[Expense Tracker] {} added to a project {}!".format(owner.name,
-                                                                           project.name)
+    subject = "[Expense Tracker] {} added you to project {}!"
+    message.subject = subject.format(owner.name, project.name)
     template = JINJA_ENVIRONMENT.get_template('templates/newProjectEmail.html')
-    message.body = template.render(template_values)
 
-    print message.subject
-    print message.body
+    for participant in participants:
+        template_values["name"]         = participant.name
+        template_values["is_moderator"] = participant.key in project.moderators
+        message.to   = "{} <{}>".format(participant.name, participant.email)
+        message.body = template.render(template_values)
+        message.send()
 
 
 class ProjectHome(webapp2.RequestHandler):
@@ -241,8 +246,6 @@ def sendEmail(project, expense):
                 "name"   : participant.name,
                 "amount" : amount
             })
-
-            #body += "\n{} : ${:.2f}".format(participant.name, amount)
         isPayer = (expense.paid_by == participant.key)
         if (emailOption == "all" or
            (emailOption == "relevant" and (isPayer or amount > 0))):
@@ -252,10 +255,8 @@ def sendEmail(project, expense):
     message.body = template.render(template_values)
     for appUser in usersInvolved:
             message.to = "{} <{}>".format(participant.name, participant.email)
-            #message.body = body
             #message.html = "<pre>{}</pre>".format(body)
             message.send()
-    print message.body
 
 class Summary(webapp2.RequestHandler):
     def get(self):
