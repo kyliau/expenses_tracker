@@ -5,5 +5,5 @@ Details : {{ expense.details                  }}
 Paid By : {{ payer                            }}
 Split with :
 {%- for split in splits %}
-    {{ split.name }} : {{ split.amount }}
+    {{ split.name }} : {{ "${:.2f}".format(split.amount) }}
 {%- endfor %}
