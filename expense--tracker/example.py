@@ -124,7 +124,7 @@ def sendNewProjectEmail(project, owner, participants):
         "project_id"   : project.key.urlsafe()
     }
     message = mail.EmailMessage()
-    message.sender = "Expense Tracker <admin@expense--tracker.appspot.com>"
+    message.sender = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
     subject = "[Expense Tracker] {} added you to project {}!"
     message.subject = subject.format(owner.name, project.name)
     template = JINJA_ENVIRONMENT.get_template('templates/newProjectEmail.html')
@@ -135,7 +135,7 @@ def sendNewProjectEmail(project, owner, participants):
         template_values["name"]         = participant.name
         template_values["is_moderator"] = participant.key in project.moderators
         message.to   = "{} <{}>".format(participant.name, participant.email)
-        message.body = template.render(template_values)
+        message.html = template.render(template_values)
         message.send()
 
 
