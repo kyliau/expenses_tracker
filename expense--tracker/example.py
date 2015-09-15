@@ -344,7 +344,7 @@ class Admin(webapp2.RequestHandler):
     def post(self):
         expenseId = self.request.get("to_delete")
         if not expenseId:
-            self.response.write("Request is invalid")
+            return self.response.write("Request is invalid")
         expenseKey = ndb.Key(urlsafe=expenseId)
         expense = expenseKey.get()
         if not expense:
@@ -357,7 +357,6 @@ class Admin(webapp2.RequestHandler):
         if appUser.key not in project.moderators:
             self.abort(401, detail="User is not authorized")
         expenseKey.delete()
-        print expense
         self.response.write("Deleted " + expense.details)
 
 class Settings(webapp2.RequestHandler):
