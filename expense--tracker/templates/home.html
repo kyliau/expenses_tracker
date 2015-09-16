@@ -2,7 +2,9 @@
 {% block container %}
 <p>Hello {{name}}!</p>
 {% for project in projects %}
-  <p class="text-center"><a class="btn btn-default" href="/project?id={{project.key.urlsafe()}}" role="button">{{project.name}}</a></p>
+<p class="text-center">
+  <a class="btn btn-default" href="/project?id={{project.key.urlsafe()}}" role="button">{{project.name}}</a>
+</p>
 {% endfor %}
 <p class="text-center"><a class="btn btn-default" href="/newproject" role="button">Create New Project</a></p>
 {% endblock %}

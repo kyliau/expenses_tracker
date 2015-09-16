@@ -21,7 +21,6 @@ class MainPage(webapp2.RequestHandler):
         user = users.get_current_user()
         appUser = ettypes.AppUser.queryByUserId(user.user_id())
         if appUser:
-            projects = appUser.getAllProjects()
             template_values = {
                 'current_page' : "Home",
                 'logout_url'   : users.create_logout_url('/'),
@@ -318,7 +317,7 @@ class Admin(webapp2.RequestHandler):
     def get(self):
         projectId = self.request.get('id')
         if not projectId:
-            self.redirect('/home')
+            return self.redirect('/home')
         projectKey = ndb.Key(urlsafe=projectId)
         project = projectKey.get()
         if not project:
@@ -342,9 +341,38 @@ class Admin(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
     def post(self):
+        projectId = self.request.get("project_to_delete")
+        if not projectId:
+            return self.response.write("Request is invalid")
+        projectKey = ndb.Key(urlsafe=projectId)
+        project = projectKey.get()
+        if not project:
+            self.response.write("Request is invalid")
+        # need to make sure the request to delete the project originates from
+        # the project owner
+        user = users.get_current_user()
+        appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        if appUser.key is not project.owner:
+            # log error message here
+            return self.abort(401, detail="User is not authorized to delete project")
+        # TODO: Also need to delete the key from each participant's profile
+        # That means we need to make this a transaction
+        for participant in project.getAllParticipants():
+            #participant.projects.remove(this project)
+            #participant.settings.remove(this project's settings)
+        projectKey.delete()
+        self.redirect("/home")
+
+# This class handles all ajax requests
+class RequestProcessor(webapp2.RequestHandler):
+    # This handles the delete transaction request
+    def post(self):
         expenseId = self.request.get("to_delete")
         if not expenseId:
+            # TODO: Consider abort with an error code here
             return self.response.write("Request is invalid")
+        # TODO: The statement below might throw due to invalid key.
+        # Need to double check the API
         expenseKey = ndb.Key(urlsafe=expenseId)
         expense = expenseKey.get()
         if not expense:
@@ -398,6 +426,7 @@ app = webapp2.WSGIApplication([
     ('/project', ProjectHome),
     ('/summary', Summary),
     ('/admin', Admin),
-    ('/settings', Settings)
+    ('/settings', Settings),
+    ('/request', RequestProcessor)
 ], debug=True)
 
