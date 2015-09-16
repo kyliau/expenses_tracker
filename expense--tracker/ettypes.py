@@ -164,6 +164,10 @@ class Expense(ndb.Model):
     #               split_equally=splitEqually)
 
     @classmethod
+    def deleteAllExpensesInProject(cls, project):
+        ndb.delete_multi(cls.query(ancestor=project.key).iter(keys_only = True))
+
+    @classmethod
     def queryByProjectKey(cls, projectKey):
         query = cls.query(ancestor=projectKey).order(-Expense.transaction_date,
                                                      -Expense.last_update)

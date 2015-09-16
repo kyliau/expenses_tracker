@@ -363,6 +363,7 @@ class Admin(webapp2.RequestHandler):
             participant.deleteProject(project)
 
         # also need to delete all transactions in the project
+        ettypes.Expense.deleteAllExpensesInProject(project)
 
         ndb.put_multi(participants)
         projectKey.delete()

@@ -64,10 +64,11 @@ $(document).ready(function() {
   });
 
   $("#delete-project").click(function(e) {
-    var message = "Are you sure you want to delete the project '" +
-                  $(this).data("project-name") + "'?";
-    var flag = confirm(message);
-    if (flag) {
+    //var message = "Are you sure you want to delete the project '" +
+    //              $(this).data("project-name") + "'?";
+    var message = "Are you sure you want to delete the project?";
+    var confirmDelete = confirm(message);
+    if (confirmDelete) {
       console.log("Delete project");
     } else {
       e.preventDefault();
