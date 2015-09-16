@@ -110,6 +110,13 @@ class AppUser(ndb.Model):
             # TODO: we need to log the error here
             return None
 
+    def deleteProject(self, project):
+        index = self.projects.index(project.key)
+        assert(index >= 0)
+        # projects and settings have the same index in the array
+        self.projects.pop(index)
+        self.settings.pop(index)
+
 class Project(ndb.Model):
     name          = ndb.StringProperty(required=True)
     owner         = ndb.KeyProperty(kind=AppUser, indexed=True, required=True)

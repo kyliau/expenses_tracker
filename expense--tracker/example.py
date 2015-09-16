@@ -352,15 +352,21 @@ class Admin(webapp2.RequestHandler):
         # the project owner
         user = users.get_current_user()
         appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        if appUser.key is not project.owner:
+        if appUser.key != project.owner:
             # log error message here
-            return self.abort(401, detail="User is not authorized to delete project")
+            return self.abort(401,
+                              detail="User is not authorized to delete project")
         # TODO: Also need to delete the key from each participant's profile
         # That means we need to make this a transaction
-        for participant in project.getAllParticipants():
-            #participant.projects.remove(this project)
-            #participant.settings.remove(this project's settings)
+        participants = project.getAllParticipants()
+        for participant in participants:
+            participant.deleteProject(project)
+
+        # also need to delete all transactions in the project
+
+        ndb.put_multi(participants)
         projectKey.delete()
+
         self.redirect("/home")
 
 # This class handles all ajax requests
