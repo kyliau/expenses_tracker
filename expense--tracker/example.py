@@ -340,6 +340,7 @@ class Admin(webapp2.RequestHandler):
         }
         self.response.write(template.render(template_values))
 
+    # TODO: need to make this into a transaction
     def post(self):
         projectId = self.request.get("project_to_delete")
         if not projectId:
