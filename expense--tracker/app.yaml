@@ -8,6 +8,9 @@ handlers:
 - url: /bootstrap
   static_dir: src/bootstrap
 
+- url: /
+  script: src.handlers.home.app
+
 - url: /.*
   script: src.handlers.main.app
   login: required
