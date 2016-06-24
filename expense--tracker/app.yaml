@@ -9,10 +9,10 @@ handlers:
   static_dir: src/bootstrap
 
 - url: /
-  script: src/home.app
+  script: src.handlers.home.app
 
 - url: /.*
-  script: src/main.app
+  script: src.handlers.main.app
   login: required
 
 libraries:
