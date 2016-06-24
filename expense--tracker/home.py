@@ -2,7 +2,7 @@ from google.appengine.api import users
 import os
 import jinja2
 import webapp2
-import ettypes
+from src.lib.etm import AppUser
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -13,7 +13,7 @@ class MainPage(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
         if user:
-            appUser = ettypes.AppUser.queryByUserId(user.user_id())
+            appUser = AppUser.queryByUserId(user.user_id())
             if appUser:
                 self.redirect('/home')
             else:
