@@ -5,12 +5,8 @@ api_version: 1
 threadsafe: true
 
 handlers:
-- url: /favicon\.ico
-  static_files: assets/favicon.ico
-  upload: favicon\.ico
-
 - url: /bootstrap
-  static_dir: assets/bootstrap
+  static_dir: src/view/bootstrap
 
 - url: /
   script: home.app
