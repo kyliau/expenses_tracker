@@ -6,13 +6,13 @@ threadsafe: true
 
 handlers:
 - url: /bootstrap
-  static_dir: src/view/bootstrap
+  static_dir: src/bootstrap
 
 - url: /
-  script: home.app
+  script: src/home.app
 
 - url: /.*
-  script: example.app
+  script: src/main.app
   login: required
 
 libraries:
