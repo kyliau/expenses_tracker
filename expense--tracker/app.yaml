@@ -9,7 +9,7 @@ handlers:
   static_dir: src/bootstrap
 
 - url: /
-  script: src.handlers.home.app
+  script: src.handlers.landing.app
 
 - url: /.*
   script: src.handlers.main.app
