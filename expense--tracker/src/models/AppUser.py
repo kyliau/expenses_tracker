@@ -1,4 +1,6 @@
 from google.appengine.ext import ndb
+from src.models import Settings
+#import Project
 
 # Note: Every user has the same user ID for all App Engine applications.
 # If your app uses the user ID in public data, such as by including it in a
@@ -25,7 +27,7 @@ class AppUser(ndb.Model):
     last_update   = ndb.DateTimeProperty(auto_now=True)
     creation_date = ndb.DateTimeProperty(auto_now_add=True)
     projects      = ndb.KeyProperty(kind='Project', repeated=True)
-    settings      = ndb.StructuredProperty(Settings, repeated=True)
+    #settings      = ndb.StructuredProperty(Settings, repeated=True)
     user_id       = ndb.StringProperty(indexed=True)
 
     @classmethod

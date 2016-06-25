@@ -4,7 +4,7 @@ class Settings(ndb.Model):
     #project       = ndb.KeyProperty(kind=Project, required=True)
     #user          = ndb.KeyProperty(kind=AppUser, required=True)
     receive_email = ndb.StringProperty(choices=['all', 'relevant', 'none'],
-                                       default='none')
+                                       default='relevant')
 
     @classmethod
     def createNewSettings(cls, project, appUsers):

@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb
+import AppUser
 
 PROJECT_PARENT_KEY = ndb.Key("Project", "DEFAULT_KEY")
 

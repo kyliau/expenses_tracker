@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb
+import AppUser
 
 class IndividualAmount(ndb.Model):
     user   = ndb.KeyProperty(kind=AppUser, indexed=False, required=True)
