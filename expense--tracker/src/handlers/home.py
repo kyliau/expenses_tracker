@@ -14,7 +14,7 @@ class MainPage(webapp2.RequestHandler):
                 self.redirect("/register")
         else:
             url = users.create_login_url(self.request.uri)
-            template_values = { "url": url }
+            template_values = { "url" : url }
             template = JINJA_ENVIRONMENT.get_template("templates/index.html")
             self.response.write(template.render(template_values))
 
