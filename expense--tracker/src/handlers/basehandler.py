@@ -16,11 +16,3 @@ class BaseHandler(webapp2.RequestHandler):
             webapp2.RequestHandler.dispatch(self)
         else:
             self.redirect("/register")
-
-    #@webapp2.cached_property
-    #def user(self):
-    #    return self.user
-#
-    #@webapp2.cached_property
-    #def appUser(self):
-    #    return self.appuser
