@@ -6,16 +6,16 @@ from src.utils.jinjautil import JINJA_ENVIRONMENT
 
 class SummaryHandler(BaseHandler):
     def get(self):
-        projectId = self.request.get('id')
+        projectId = self.request.get("id")
         if not projectId:
-            self.redirect('/home')
+            self.redirect("/home")
         try:
             projectKey = ndb.Key(urlsafe=projectId)
             project = projectKey.get()
         except TypeError:
-            self.redirect('/home')
+            self.redirect("/home")
         if not project:
-            self.redirect('/home')
+            self.redirect("/home")
         appUser = self.appUser
         if appUser.key not in project.participants:
             self.abort(401)
@@ -25,35 +25,37 @@ class SummaryHandler(BaseHandler):
         totalSpent = 0
         index = project.participants.index(appUser.key)
         for expense in expenses:
-            if expense.paid_by == appUser.key:
+            isPayer = expense.paid_by == appUser.key
+            if isPayer:
                 totalPaid += expense.amount
-            individualAmount = expense.individual_amount[index].amount
-            totalSpent += individualAmount
+            amount = expense.individual_amount[index].amount
+            totalSpent += amount
+            #expense.show = isPayer or amount > 0
 
         amountOwed = totalSpent - totalPaid        
-        message = ''
-        alertType = 'alert-info'
+        message = ""
+        alertType = "alert-info"
         amtString = "${:.2f}".format(abs(amountOwed))
         if abs(amountOwed) < 0.05:
-            message = 'All dues are clear'
-            alertType = 'alert-success'
+            message = "All dues are clear"
+            alertType = "alert-success"
         elif amountOwed > 0:
             message = "{} owes Auntie Terry {}".format(appUser.name, amtString)
         else:
-            message = 'Auntie Terry owes %s %s' % (appUser.name, amtString)
+            message = "Auntie Terry owes %s %s" % (appUser.name, amtString)
 
-        template = JINJA_ENVIRONMENT.get_template('templates/summary.html')
+        template = JINJA_ENVIRONMENT.get_template("templates/summary.html")
         template_values = {
-            'project_key'  : projectKey.urlsafe(),
-            'message'      : message,
-            'alert_type'   : alertType,
-            #'current_page' : "Home",
-            'logout_url'   : users.create_logout_url('/'),
-            'user_key'     : appUser.key,
-            'expenses'     : expenses,
-            'index'        : index,
-            'total_paid'   : totalPaid,
-            'total_spent'  : totalSpent,
-            'id_resolver'  : project.mapIdsToUsers()
+            "project_key"  : projectKey.urlsafe(),
+            "message"      : message,
+            "alert_type"   : alertType,
+            #"current_page" : "Home",
+            "logout_url"   : users.create_logout_url("/"),
+            "user_key"     : appUser.key,
+            "expenses"     : expenses,
+            "index"        : index,
+            "total_paid"   : totalPaid,
+            "total_spent"  : totalSpent,
+            "id_resolver"  : project.mapIdsToUsers()
         }
         self.response.write(template.render(template_values))
