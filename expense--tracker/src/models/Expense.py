@@ -1,9 +1,6 @@
 from google.appengine.ext import ndb
-import AppUser
-
-class IndividualAmount(ndb.Model):
-    user   = ndb.KeyProperty(kind=AppUser, indexed=False, required=True)
-    amount = ndb.FloatProperty(indexed=False, required=True)
+from src.models.appuser import AppUser
+from src.models.individualamount import IndividualAmount
 
 class Expense(ndb.Model):
     paid_by           = ndb.KeyProperty(kind=AppUser, required=True)

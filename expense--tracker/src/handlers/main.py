@@ -11,11 +11,12 @@ import webapp2
 
 from src.handlers.register import RegisterHandler
 from src.handlers.userhome import UserHomeHandler
+from src.handlers.newproject import NewProjectHandler
 
 app = webapp2.WSGIApplication([
     ('/home', UserHomeHandler),
     ('/register', RegisterHandler),
-    #('/newproject', CreateNewProject),
+    ('/newproject', NewProjectHandler),
     #('/project', ProjectHome),
     #('/summary', Summary),
     #('/admin', Admin),

@@ -1,5 +1,5 @@
 from google.appengine.ext import ndb
-import AppUser
+from src.models.appuser import AppUser
 
 PROJECT_PARENT_KEY = ndb.Key("Project", "DEFAULT_KEY")
 
