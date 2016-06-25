@@ -7,7 +7,7 @@ from src.models.individualamount import IndividualAmount
 from src.utils.emailutil import EmailUtil
 from src.utils.jinjautil import JINJA_ENVIRONMENT
 
-class ProjectHome(BaseHandler):
+class ProjectHomeHandler(BaseHandler):
     def get(self):
         projectId = self.request.get('id')
         if not projectId:
@@ -29,7 +29,7 @@ class ProjectHome(BaseHandler):
             'project'      : project,
             'logout_url'   : users.create_logout_url('/'),
             'participants' : project.getAllParticipants(),
-            'current_user' : appUser
+            'current_user' : self.appUser
         }
         self.response.write(template.render(template_values))
 

@@ -1,4 +1,10 @@
-class Summary(webapp2.RequestHandler):
+from google.appengine.ext import ndb
+from google.appengine.api import users
+from src.handlers.basehandler import BaseHandler
+from src.models.expense import Expense
+from src.utils.jinjautil import JINJA_ENVIRONMENT
+
+class SummaryHandler(BaseHandler):
     def get(self):
         projectId = self.request.get('id')
         if not projectId:
@@ -10,11 +16,11 @@ class Summary(webapp2.RequestHandler):
             self.redirect('/home')
         if not project:
             self.redirect('/home')
-        user = users.get_current_user()
-        appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        if not appUser or appUser.key not in project.participants:
+        appUser = self.appUser
+        if appUser.key not in project.participants:
             self.abort(401)
-        expenses = ettypes.Expense.queryByProjectKey(projectKey)
+        
+        expenses = Expense.queryByProjectKey(projectKey)
         totalPaid = 0
         totalSpent = 0
         index = project.participants.index(appUser.key)

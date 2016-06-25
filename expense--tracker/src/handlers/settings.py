@@ -1,9 +1,14 @@
-class Settings(webapp2.RequestHandler):
+from google.appengine.api import users
+from src.handlers.basehandler import BaseHandler
+from src.utils.jinjautil import JINJA_ENVIRONMENT
+
+class SettingsHandler(BaseHandler):
     def get(self):
-        user = users.get_current_user()
-        appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        if not appUser:
-            self.abort(401)
+        #user = users.get_current_user()
+        #appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        #if not appUser:
+        #    self.abort(401)
+        appUser = self.appUser
         template = JINJA_ENVIRONMENT.get_template("templates/settings.html")
         template_values = {
             "current_page" : "Settings",
@@ -15,10 +20,11 @@ class Settings(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
     def post(self):
-        user = users.get_current_user()
-        appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        if not appUser:
-            self.abort(401)
+        #user = users.get_current_user()
+        #appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        #if not appUser:
+        #    self.abort(401)
+        appUser = self.appUser
         settingsChanged = False
         for index, project in enumerate(appUser.projects):
             existingEmailOption = appUser.settings[index]

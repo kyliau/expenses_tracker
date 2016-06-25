@@ -1,4 +1,10 @@
-class Admin(webapp2.RequestHandler):
+from google.appengine.ext import ndb
+from google.appengine.api import users
+from src.handlers.basehandler import BaseHandler
+from src.models.expense import Expense
+from src.utils.jinjautil import JINJA_ENVIRONMENT
+
+class AdminHandler(BaseHandler):
     def get(self):
         projectId = self.request.get('id')
         if not projectId:
@@ -7,12 +13,13 @@ class Admin(webapp2.RequestHandler):
         project = projectKey.get()
         if not project:
             self.redirect('/home')
-        user = users.get_current_user()
-        appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        if not appUser or appUser.key not in project.participants:
+        appUser = self.appUser
+        #user = users.get_current_user()
+        #appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        if appUser.key not in project.participants:
             self.abort(401)
         isModerator = (appUser.key in project.moderators)
-        expenses = ettypes.Expense.queryByProjectKey(projectKey)
+        expenses = Expense.queryByProjectKey(projectKey)
         template = JINJA_ENVIRONMENT.get_template('templates/admin.html')
         template_values = {
             'current_page' : "Admin",
@@ -36,8 +43,9 @@ class Admin(webapp2.RequestHandler):
             self.response.write("Request is invalid")
         # need to make sure the request to delete the project originates from
         # the project owner
-        user = users.get_current_user()
-        appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        appUser = self.appUser
+        #user = users.get_current_user()
+        #appUser = ettypes.AppUser.queryByUserId(user.user_id())
         if appUser.key != project.owner:
             # log error message here
             return self.abort(401,
@@ -49,7 +57,7 @@ class Admin(webapp2.RequestHandler):
             participant.deleteProject(project)
 
         # also need to delete all transactions in the project
-        ettypes.Expense.deleteAllExpensesInProject(project)
+        Expense.deleteAllExpensesInProject(project)
 
         ndb.put_multi(participants)
         projectKey.delete()

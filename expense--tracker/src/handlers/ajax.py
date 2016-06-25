@@ -1,5 +1,8 @@
+from google.appengine.ext import ndb
+from src.handlers.basehandler import BaseHandler
+
 # This class handles all ajax requests
-class RequestProcessor(webapp2.RequestHandler):
+class AjaxHandler(BaseHandler):
     # This handles the delete transaction request
     def post(self):
         expenseId = self.request.get("to_delete")
@@ -15,9 +18,9 @@ class RequestProcessor(webapp2.RequestHandler):
         project = expenseKey.parent().get()
         if not project:
             self.response.write("Request is invalid")
-        user = users.get_current_user()
-        appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        if appUser.key not in project.moderators:
+        #user = users.get_current_user()
+        #appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        if self.appUser.key not in project.moderators:
             self.abort(401, detail="User is not authorized")
         expenseKey.delete()
         self.response.write("Deleted " + expense.details)
