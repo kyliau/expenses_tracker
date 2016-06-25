@@ -1,36 +1,13 @@
 import os
 import urllib
 import json
-#import ettypes
-
+import jinja2
+import webapp2
 from google.appengine.api import mail
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from datetime import datetime
-
-import jinja2
-import webapp2
-
-JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
-    extensions=['jinja2.ext.autoescape'],
-    autoescape=True)
-
-class MainPage(webapp2.RequestHandler):
-    def get(self):
-        self.response.write("Hello World")
-        #user = users.get_current_user()
-        #if user:
-        #    appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        #    if appUser:
-        #        self.redirect('/home')
-        #    else:
-        #        self.redirect('/register')
-        #else:
-        #    url = users.create_login_url(self.request.uri)
-        #    template_values = { 'url': url }
-        #    template = JINJA_ENVIRONMENT.get_template('templates/index.html')
-        #    self.response.write(template.render(template_values))
+from src.utils.jinjautil import JINJA_ENVIRONMENT
 
 class Home(webapp2.RequestHandler):
     def get(self):
@@ -444,7 +421,6 @@ class Settings(webapp2.RequestHandler):
         self.response.write("Success! Your settings have been updated.")
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
     ('/home', Home),
     ('/register', RegisterNewUser),
     ('/newproject', CreateNewProject),

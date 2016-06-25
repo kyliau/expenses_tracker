@@ -1,6 +1,7 @@
 from google.appengine.ext import ndb
-from src.models import Settings
+#from src.models import Settings
 #import Project
+#import src.models.settings
 
 # Note: Every user has the same user ID for all App Engine applications.
 # If your app uses the user ID in public data, such as by including it in a
