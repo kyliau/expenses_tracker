@@ -17,9 +17,3 @@ indexes:
     direction: desc
   - name: last_update
     direction: desc
-
-- kind: Greeting
-  ancestor: yes
-  properties:
-  - name: date
-    direction: desc
