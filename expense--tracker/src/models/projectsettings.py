@@ -26,7 +26,7 @@ class ProjectSettings(ndb.Model):
         )
 
     @classmethod
-    def getSettings(cls, project, user):
+    def query(cls, project, user):
         """
         Return the first 'ProjectSettings' that matches the specified
         'project' and 'user'.

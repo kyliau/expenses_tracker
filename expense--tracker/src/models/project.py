@@ -57,15 +57,15 @@ class Project(ndb.Model):
         keys = [member.user_key for member in self.members if member.is_admin]
         return user.key in keys
 
-    def getSettings(self, user):
-        """
-        Return the 'ProjectSettings' for the specified 'user' if
-        'user' is a member of this project, otherwise return None.
-        """
-        for member in self.members:
-            if member.user_key == user.key:
-                return member.settings
-        return None
+    #def getSettings(self, user):
+    #    """
+    #    Return the 'ProjectSettings' for the specified 'user' if
+    #    'user' is a member of this project, otherwise return None.
+    #    """
+    #    for member in self.members:
+    #        if member.user_key == user.key:
+    #            return member.settings
+    #    return None
 
     #def mapIdsToUsers(self):
     #    return dict(zip(self.participants, self.getAllParticipants()))

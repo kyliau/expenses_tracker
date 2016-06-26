@@ -63,14 +63,13 @@ class ProjectHomeHandler(BaseHandler):
                           amount=amount,
                           split_equally=(splitEqually=="on"))
         totalAmount = 0
-        for participant in project.participants:
-            amt = float(self.request.get(participant.urlsafe(), 0) or 0)
+        for member in project.getMembers():
+            amt = float(self.request.get(member.urlsafe(), 0) or 0)
             assert amt >= 0
             totalAmount += amt
-            indvAmt = IndividualAmount(user=participant, amount=amt)
+            indvAmt = IndividualAmount(user=member, amount=amt)
             expense.individual_amount.append(indvAmt)
         assert abs(totalAmount - amount) < 0.01
         expense.put()
-        # check if we need to send the email
-        EmailUtil.sendEmail(project, expense)
+        EmailUtil.sendNewTransactionEmail(project, expense)
         self.redirect('/summary?id=' + project.key.urlsafe())

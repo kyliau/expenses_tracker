@@ -22,11 +22,14 @@ class Expense(ndb.Model):
 
     @classmethod
     def deleteAllExpensesInProject(cls, project):
-        ndb.delete_multi(cls.query(ancestor=project.key).iter(keys_only = True))
+        keys = (cls.query(ancestor=project.key)
+                   .iter(keys_only = True))
+        ndb.delete_multi(keys)
 
     @classmethod
     def queryByProjectKey(cls, projectKey):
-        query = cls.query(ancestor=projectKey).order(-Expense.transaction_date,
-                                                     -Expense.last_update)
+        query = (cls.query(ancestor=projectKey)
+                    .order(-Expense.transaction_date,
+                           -Expense.last_update))
         return query.fetch()
 

@@ -1,4 +1,5 @@
 from google.appengine.api import mail
+from src.models.projectsettings import ProjectSettings
 from src.utils.jinjautil import JINJA_ENVIRONMENT
 
 class EmailUtil(object):
@@ -33,15 +34,15 @@ class EmailUtil(object):
             message.send()
 
     @staticmethod
-    def sendEmail(project, expense):
+    def sendNewTransactionEmail(project, expense):
         paidBy = expense.paid_by.get()
         message = mail.EmailMessage()
         message.sender = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
         subject = "[{}] {} paid ${:.2f} for {}"
         message.subject = subject.format(project.name,
-                                        paidBy.name,
-                                        expense.amount,
-                                        expense.details)
+                                         paidBy.name,
+                                         expense.amount,
+                                         expense.details)
         template_values = {
             'project_name' : project.name,
             'payer'        : paidBy.name,
@@ -53,21 +54,16 @@ class EmailUtil(object):
             'splits' : []
         }
 
-        # we need to build a map of userKey to the amount of the user
-        def buildMap(result, indvAmt):
-            result[indvAmt.user] = indvAmt.amount
-            return result
-        userKeyToAmountMap = reduce(buildMap, expense.individual_amount, {})
-
-        usersInvolved = []
+        individualAmount = {ia.user_key:ia.amount for 
+                            ia in expense.individual_amount}
+        receipients = []
         # build the message body
         for member in project.getMembers():
             assert project.key in member.projects
-
-            emailOption = member.getSettingsForProject(project).receive_email
+            settings = ProjectSettings.query(project, member)
+            emailOption = settings.receive_email
             assert emailOption in ["all", "relevant", "none"]
-
-            amount = userKeyToAmountMap[member.key]
+            amount = individualAmount[member.key]
             assert amount >= 0
             if amount > 0:
                 template_values["splits"].append({
@@ -75,14 +71,15 @@ class EmailUtil(object):
                     "amount" : amount
                 })
             isPayer = (expense.paid_by == member.key)
-            isRelevant = (emailOption == "relevant" and (isPayer or amount > 0))
-
+            isInvolved = (isPayer or amount > 0)
+            isRelevant = (emailOption == "relevant" and isInvolved)
             if emailOption == "all" or isRelevant:
-                usersInvolved.append(member)
+                receipients.append(member)
 
-        template = JINJA_ENVIRONMENT.get_template("templates/newTransactionEmail.html")
+        templateLocation = "templates/newTransactionEmail.html"
+        template = JINJA_ENVIRONMENT.get_template(templateLocation)
         message.body = template.render(template_values)
-        for user in usersInvolved:
+        for user in receipients:
             message.to = "{} <{}>".format(user.name, user.email)
             #message.html = "<pre>{}</pre>".format(body)
             message.send()
