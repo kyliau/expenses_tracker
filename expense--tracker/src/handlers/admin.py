@@ -16,7 +16,6 @@ class AdminHandler(BaseHandler):
         appUser = self.appUser
         if not project.isMember(appUser):
             self.abort(401)
-        #isAdmin = (appUser.key in project.moderators)
         members = project.getMembers()
         expenses = Expense.queryByProjectKey(projectKey)
         template = JINJA_ENVIRONMENT.get_template('templates/admin.html')

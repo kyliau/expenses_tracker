@@ -22,7 +22,7 @@ APPUSER_PARENT_KEY = ndb.Key("AppUser", "DEFAULT_KEY")
 
 class AppUser(ndb.Model):
     name          = ndb.StringProperty(required=True)
-    email         = ndb.StringProperty(required=True)
+    email         = ndb.StringProperty(required=True, indexed=True)
     last_update   = ndb.DateTimeProperty(auto_now=True)
     creation_date = ndb.DateTimeProperty(auto_now_add=True)
     projects      = ndb.KeyProperty(kind="Project", repeated=True)
