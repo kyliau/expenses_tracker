@@ -48,46 +48,40 @@ class AppUser(ndb.Model):
         return query.get()
 
     @classmethod
-    def createUnregisteredUser(cls, email):
-        name = email.split('@')[0]
-        return cls(parent=APPUSER_PARENT_KEY, name=name, email=email)
+    def create(cls, email, name=None):
+        """
+        Return a new instance of 'AppUser' with the specified 'email'
+        and optional 'name'. If 'name'' is not specified then the
+        username of the 'email' is used instead.
+        If there is an existing user with the specified 'email' then
+        return the existing instance instead.
+        Note that this method does not commit the new instance to the
+        datastore.
+        """
+        existingUser = cls.queryByEmail(email)
+        if existingUser:
+            return existingUser
+        else:
+            if name is None:
+                name = email.split("@")[0]
+            return cls(parent=APPUSER_PARENT_KEY,
+                       name=name,
+                       email=email)
 
-    @classmethod
-    def addRegisteredUser(cls, user, name):
-        appUser = cls.queryByEmail(user.email())
-        if not appUser:
-            appUser = cls.createUnregisteredUser(user.email())
-        if appUser.user_id is None:
-            appUser.name    = name
-            appUser.user_id = user.user_id()
-            appUser.put()
-        return appUser
-
-    @classmethod
-    def mapEmailsToUsers(cls, emails):
-        mapper = {}
-        for email in emails:
-            appUser = cls.queryByEmail(email)
-            if appUser is None:
-                appUser = cls.createUnregisteredUser(email)
-                #we should really avoid calling put in a loop...
-                #but we need this to get a complete key
-                #cannot use allocate_ids because this is in a transaction
-                #not allowed to call allocate_ids in a transaction
-                appUser.put()
-            assert appUser
-            mapper[email] = appUser
-        return mapper
+    def isNew(self):
+        """
+        Return true if the 'user_id' of the user is defined, otherwise
+        return false.
+        """
+        return self.user_id is None
 
     def getAllProjects(self):
         return ndb.get_multi(self.projects)
 
-    def getAllSettings(self):
-        return self.settings
-
     def addProject(self, project):
         self.projects.append(project.key)
-        #need to add settings for the project as well
+        # need to add settings for the project as well.
+        # Note, default settings is used.
         self.settings.append(Settings())
 
     def getSettingsForProject(self, project):
