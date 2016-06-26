@@ -39,8 +39,10 @@ class AppUser(ndb.Model):
 
     @classmethod
     def queryByEmail(cls, email):
-        """Return the AppUser that has the specified 'email'.
-           Return None if there is no such AppUser."""
+        """
+        Return the AppUser that has the specified 'email'.
+        Return None if there is no such AppUser.
+        """
         query = cls.query(ancestor=APPUSER_PARENT_KEY,
                           filters=AppUser.email==email)
         return query.get()
