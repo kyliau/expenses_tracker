@@ -31,12 +31,16 @@ class AppUser(ndb.Model):
 
     @classmethod
     def queryByUserId(cls, user_id):
+        """Return the AppUser that has the specified 'user_id'.
+           Return None if there is no such AppUser."""
         query = cls.query(ancestor=APPUSER_PARENT_KEY,
                           filters=AppUser.user_id==user_id)
         return query.get()
 
     @classmethod
     def queryByEmail(cls, email):
+        """Return the AppUser that has the specified 'email'.
+           Return None if there is no such AppUser."""
         query = cls.query(ancestor=APPUSER_PARENT_KEY,
                           filters=AppUser.email==email)
         return query.get()
@@ -49,14 +53,12 @@ class AppUser(ndb.Model):
     @classmethod
     def addRegisteredUser(cls, user, name):
         appUser = cls.queryByEmail(user.email())
-        if appUser and appUser.user_id is None:
-            assert appUser.user_id is None
+        if not appUser:
+            appUser = cls.createUnregisteredUser(user.email())
+        if appUser.user_id is None:
             appUser.name    = name
             appUser.user_id = user.user_id()
-        else:
-            appUser = cls.createUnregisteredUser(user.email())
-            appUser.populate(user_id=user.user_id(), name=name)
-        appUser.put()
+            appUser.put()
         return appUser
 
     @classmethod

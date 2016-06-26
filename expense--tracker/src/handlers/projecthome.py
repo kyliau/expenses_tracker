@@ -41,7 +41,7 @@ class ProjectHomeHandler(BaseHandler):
         paidBy       = self.request.get('paid_by')
         #splitAll     = self.request.get('split_all')
         splitEqually = self.request.get('split_equally')
-        splitWith    = self.request.get('split_with')
+        #splitWith    = self.request.get('split_with')
 
         #TODO data validation!
         assert amount > 0

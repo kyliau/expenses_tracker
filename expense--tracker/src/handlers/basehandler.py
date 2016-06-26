@@ -9,7 +9,7 @@ class BaseHandler(webapp2.RequestHandler):
         user = users.get_current_user()
         # user must be defined because Google login is required
         assert user
-        self.user = user
+        #self.user = user
         appUser = AppUser.queryByUserId(user.user_id())
         if appUser:
             self.appUser = appUser
