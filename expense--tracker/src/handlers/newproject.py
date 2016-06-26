@@ -27,52 +27,40 @@ class NewProjectHandler(BaseHandler):
         # TODO: data validation
         projectName = self.request.get("project_name", "My Project")
         notifyAllParticipants = self.request.get("notify_all_participants")
+        participants = self.request.get("participants")
         # TODO: wrap in try catch
-        participants = json.loads(self.request.get("participants"))
+        members = json.loads(participants)
 
         owner = self.appUser
-        participants.append({
-            "email"       : owner.email,
-            "isModerator" : True
+        members.append({
+            "email"   : owner.email,
+            "isAdmin" : True
         })
         
         # need to make sure the list is unique
         # instead of overriding participants we should throw an error
         #participants = {p["email"]:p for p in participants}.values()
 
-        appUsers = [AppUser.create(p["email"]) for p in participants]
-        keys = [user.key for user in appUsers]
-        self.response.write("Before " + str(keys))
-        userKeys = ndb.put_multi(appUsers)
-        self.response.write("After " + str(userKeys))
+        appUsers = [AppUser.create(m["email"]) for m in members]
+        ndb.put_multi(appUsers)
         
+        for member, appUser in zip(members, appUsers):
+            member["key"]   = appUser.key
+            member["name"]  = appUser.name
+            member["email"] = appUser.email
 
-        #participantKeys = ndb.Model.put_multi([])
-        #mapper = AppUser.mapEmailsToUsers(participants)
-        #participatingUsers = mapper.values()
-        #participantKeys = [participant.key for participant in participatingUsers]
-        #moderatorKeys = [mapper[moderator].key for moderator in moderators]
-        #participantKeys = map(lambda user: user.key, participatingUsers)
-        #moderatorKeys = map(lambda moderator: mapper[moderator].key, moderators)
-        
-        #newProject = Project.addNewProject(projectName,
-        #                                   owner.key,
-        #                                   participantKeys,
-        #                                   moderatorKeys)
-        #assert newProject
+        project = Project.create(projectName, owner, members)
+        project.put()
 
-        #for participant in participatingUsers:
-        #    participant.addProject(newProject)
-        #ndb.put_multi(participatingUsers)
+        for appUser in appUsers:
+            appUser.addProject(project)
+        
+        ndb.put_multi(appUsers)
 
+        if notifyAllParticipants == "on":
+            EmailUtil.sendNewProjectEmail(project, owner, members)
         
-        #if notifyAllParticipants:
-        #    EmailUtil.sendNewProjectEmail(newProject, owner, participatingUsers)
-        
-        #settings = ettypes.Settings.createNewSettings(newProject, participatingUsers)
-        #ndb.put_multi(settings)
-        
-        #query_params = {
-        #    "id" : newProject.key.urlsafe()
-        #}
-        #self.redirect("project?" + urllib.urlencode(query_params))
+        query_params = {
+            "id" : project.key.urlsafe()
+        }
+        self.redirect("project?" + urllib.urlencode(query_params))

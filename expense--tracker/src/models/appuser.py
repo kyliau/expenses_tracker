@@ -1,5 +1,5 @@
 from google.appengine.ext import ndb
-from src.models.settings import Settings
+#from src.models.projectsettings import ProjectSettings
 
 # Note: Every user has the same user ID for all App Engine applications.
 # If your app uses the user ID in public data, such as by including it in a
@@ -25,8 +25,8 @@ class AppUser(ndb.Model):
     email         = ndb.StringProperty(required=True)
     last_update   = ndb.DateTimeProperty(auto_now=True)
     creation_date = ndb.DateTimeProperty(auto_now_add=True)
-    projects      = ndb.KeyProperty(kind='Project', repeated=True)
-    settings      = ndb.StructuredProperty(Settings, repeated=True)
+    projects      = ndb.KeyProperty(kind="Project", repeated=True)
+    #settings      = ndb.StructuredProperty(Settings, repeated=True)
     user_id       = ndb.StringProperty(indexed=True)
 
     @classmethod
@@ -79,20 +79,20 @@ class AppUser(ndb.Model):
         return ndb.get_multi(self.projects)
 
     def addProject(self, project):
+        """
+        Add the specified 'project' to the user's list of 'projects'.
+        """
         self.projects.append(project.key)
-        # need to add settings for the project as well.
-        # Note, default settings is used.
-        self.settings.append(Settings())
 
-    def getSettingsForProject(self, project):
-        try:
-            # doing a linear search here... We might be able to do better
-            # with a better schema
-            index = self.projects.index(project.key)
-            return self.settings[index]
-        except ValueError:
-            # TODO: we need to log the error here
-            return None
+    #def getSettingsForProject(self, project):
+    #    try:
+    #        # doing a linear search here... We might be able to do better
+    #        # with a better schema
+    #        index = self.projects.index(project.key)
+    #        return self.settings[index]
+    #    except ValueError:
+    #        # TODO: we need to log the error here
+    #        return None
 
     def deleteProject(self, project):
         index = self.projects.index(project.key)

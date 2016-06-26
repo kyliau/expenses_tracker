@@ -21,7 +21,7 @@
       {% for participant in participants %}
       <th>{{ participant.name }}</td>
       {% endfor %}
-      {%if is_moderator %}<th></th>{%endif%}
+      {%if is_admin %}<th></th>{%endif%}
     </tr>
   </thead>
   <tbody>
@@ -35,7 +35,7 @@
       {% for indvamt in expense.individual_amount %}
       <td>{% if indvamt.amount > 0 %}{{ "${:.2f}".format(indvamt.amount) }}{% endif %}</td>
       {% endfor %}
-      {% if is_moderator %}
+      {% if is_admin %}
       <td><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true" title="Click to delete this transaction" data-id="{{expense.key.urlsafe()}}" data-details="{{expense.details}}"></span></td>
       {% endif %}
     </tr>

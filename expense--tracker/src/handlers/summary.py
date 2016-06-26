@@ -17,7 +17,7 @@ class SummaryHandler(BaseHandler):
         if not project:
             self.redirect("/home")
         appUser = self.appUser
-        if appUser.key not in project.participants:
+        if not project.isMember(appUser):
             self.abort(401)
         
         expenses = Expense.queryByProjectKey(projectKey)

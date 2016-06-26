@@ -20,14 +20,14 @@ $(document).ready(function() {
         var participants = [];
         $('input[type=email]').each(function() {
             var email = this.value.trim();
-            var isModerator = $(this).closest('td')
-                                     .next()
-                                     .children()
-                                     .is(':checked');
+            var isAdmin = $(this).closest('td')
+                                 .next()
+                                 .children()
+                                 .is(':checked');
             if (email) {
                 participants.push({
-                    email       : email,
-                    isModerator : isModerator,
+                    email   : email,
+                    isAdmin : isAdmin,
                 });
             }
         });

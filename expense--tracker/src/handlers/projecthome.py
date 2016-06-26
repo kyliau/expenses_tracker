@@ -28,7 +28,7 @@ class ProjectHomeHandler(BaseHandler):
             'current_page' : "Home",
             'project'      : project,
             'logout_url'   : users.create_logout_url('/'),
-            'participants' : project.getAllParticipants(),
+            'participants' : project.getMembers(),
             'current_user' : self.appUser
         }
         self.response.write(template.render(template_values))

@@ -1,11 +1,16 @@
 from google.appengine.api import mail
 from src.utils.jinjautil import JINJA_ENVIRONMENT
 
-class EmailUtil:
+class EmailUtil(object):
     """Namespace for functions that handles email"""
 
     @staticmethod
-    def sendNewProjectEmail(project, owner, participants):
+    def sendNewProjectEmail(project, owner, members):
+        """
+        Send a notification email to the specified 'members' of the
+        new 'project' created by 'owner'.
+        """
+
         template_values = {
             "owner"        : owner.name,
             "project_name" : project.name,
@@ -17,12 +22,13 @@ class EmailUtil:
         message.subject = subject.format(owner.name, project.name)
         template = JINJA_ENVIRONMENT.get_template('templates/newProjectEmail.html')
 
-        for participant in participants:
+        for member in members:
             #if participant is owner:
             #    continue    # don't send email to owner of the project
-            template_values["name"]         = participant.name
-            template_values["is_moderator"] = participant.key in project.moderators
-            message.to   = "{} <{}>".format(participant.name, participant.email)
+            template_values["name"]     = member["name"]
+            template_values["is_admin"] = member["isAdmin"]
+            message.to = "{} <{}>".format(member["name"],
+                                          member["email"])
             message.html = template.render(template_values)
             message.send()
 
@@ -55,23 +61,24 @@ class EmailUtil:
 
         usersInvolved = []
         # build the message body
-        for participant in project.getAllParticipants():
-            assert project.key in participant.projects
+        for member in project.getMembers():
+            assert project.key in member.projects
 
-            emailOption = participant.getSettingsForProject(project).receive_email
+            emailOption = member.getSettingsForProject(project).receive_email
             assert emailOption in ["all", "relevant", "none"]
 
-            amount = userKeyToAmountMap[participant.key]
+            amount = userKeyToAmountMap[member.key]
             assert amount >= 0
             if amount > 0:
                 template_values["splits"].append({
-                    "name"   : participant.name,
+                    "name"   : member.name,
                     "amount" : amount
                 })
-            isPayer = (expense.paid_by == participant.key)
-            if (emailOption == "all" or
-            (emailOption == "relevant" and (isPayer or amount > 0))):
-                usersInvolved.append(participant)
+            isPayer = (expense.paid_by == member.key)
+            isRelevant = (emailOption == "relevant" and (isPayer or amount > 0))
+
+            if emailOption == "all" or isRelevant:
+                usersInvolved.append(member)
 
         template = JINJA_ENVIRONMENT.get_template("templates/newTransactionEmail.html")
         message.body = template.render(template_values)

@@ -14,21 +14,20 @@ class AdminHandler(BaseHandler):
         if not project:
             self.redirect('/home')
         appUser = self.appUser
-        #user = users.get_current_user()
-        #appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        if appUser.key not in project.participants:
+        if not project.isMember(appUser):
             self.abort(401)
-        isModerator = (appUser.key in project.moderators)
+        #isAdmin = (appUser.key in project.moderators)
+        members = project.getMembers()
         expenses = Expense.queryByProjectKey(projectKey)
         template = JINJA_ENVIRONMENT.get_template('templates/admin.html')
         template_values = {
             'current_page' : "Admin",
             'project_key'  : projectKey.urlsafe(),
             'logout_url'   : users.create_logout_url('/'),
-            'participants' : project.getAllParticipants(),
+            'participants' : members,
             'expenses'     : expenses,
-            'id_resolver'  : project.mapIdsToUsers(),
-            'is_moderator' : isModerator
+            'id_resolver'  : {m.key:m for m in members},
+            'is_admin'     : project.isAdmin(appUser)
         }
         self.response.write(template.render(template_values))
 
@@ -52,14 +51,14 @@ class AdminHandler(BaseHandler):
                               detail="User is not authorized to delete project")
         # TODO: Also need to delete the key from each participant's profile
         # That means we need to make this a transaction
-        participants = project.getAllParticipants()
-        for participant in participants:
-            participant.deleteProject(project)
+        members = project.getMembers()
+        for member in members:
+            member.deleteProject(project)
 
         # also need to delete all transactions in the project
         Expense.deleteAllExpensesInProject(project)
 
-        ndb.put_multi(participants)
+        ndb.put_multi(members)
         projectKey.delete()
 
         self.redirect("/home")
