@@ -18,13 +18,8 @@ class NewProjectHandler(BaseHandler):
 
     #@ndb.transactional
     def post(self):
-        #user = users.get_current_user()
-        #owner = ettypes.AppUser.queryByUserId(user.user_id())
         owner = self.appUser
-        #if not owner:
-        #    self.abort(401)
-
-        projectName     = self.request.get("project_name")
+        projectName = self.request.get("project_name")
         assert projectName
         numParticipants = int(self.request.get("num_participants", 0))
         participants    = self.request.get("participants")
