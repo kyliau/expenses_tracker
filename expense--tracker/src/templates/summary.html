@@ -19,14 +19,14 @@
       </thead>
       <tbody>
         {% for expense in expenses %}
-        {% set amount = expense.individual_amount[index].amount %}
-          {% if expense.paid_by == user_key or amount > 0 %}
+        {% set amount = expense.getAmountForUser(appUser) %}
+          {% if expense.paid_by == appUser.key or amount > 0 %}
         <tr>
           <th scope="row">{{ loop.index }}</th>
           <td>{{ expense.transaction_date.strftime('%Y-%m-%d') }}</td>
           <td>{{ expense.details }}</td>
           <td>{{ id_resolver[expense.paid_by].name }}</td>
-          <td>{% if expense.paid_by == user_key %}{{ "${:.2f}".format(expense.amount) }}{% endif %}</td>
+          <td>{% if expense.paid_by == appUser.key %}{{ "${:.2f}".format(expense.amount) }}{% endif %}</td>
           <td>{% if amount > 0 %}{{ "${:.2f}".format(amount) }}{% endif %}</td>
         </tr>
           {% endif %}

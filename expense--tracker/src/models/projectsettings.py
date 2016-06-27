@@ -1,36 +1,42 @@
 from google.appengine.ext import ndb
-from src.models.appuser import AppUser
+#from src.models.project import Project
+
+EMAIL_CHOICES = ["all", "relevant", "none"]
+DEFAULT_EMAIL_CHOICE = "relevant"
 
 class ProjectSettings(ndb.Model):
     """
     A model to represent project settings for a particular user.
     """
-    user_key = ndb.KeyProperty(kind=AppUser,
-                               indexed=True,
-                               required=True)
-    receive_email = ndb.StringProperty(choices=["all",
-                                                "relevant",
-                                                "none"],
-                                       default="relevant")
+    project_key = ndb.KeyProperty(kind="Project",
+                                  indexed=True,
+                                  required=True)
+    receive_email = ndb.StringProperty(choices=EMAIL_CHOICES,
+                                       default=DEFAULT_EMAIL_CHOICE)
 
     @classmethod
-    def create(cls, project, user):
+    def create(cls, user, project):
         """
         Return a new instance of 'ProjectSettings' for the specified
         'project' and 'user'. Note the new instance is not commited to
         the datastore.
         """
         return cls(
-            parent=project.key,
-            user_key=user.key
+            parent=user.key,
+            project_key=project.key
         )
 
     @classmethod
-    def query(cls, project, user):
+    def getSettingsByFilter(cls, user, project=None):
         """
-        Return the first 'ProjectSettings' that matches the specified
-        'project' and 'user'.
+        Return the ProjectSettings that matches the specified 'user' and
+        'project' if 'project' is defined. Otherwise return the list of
+        ProjectSettings for the specified 'user'.
         """
-        query = cls.query(ancestor=project.key,
-                          filters=ProjectSettings.user_key==user.key)
-        return query.get()
+        if project:
+            query = cls.query(ancestor=user.key,
+                              filters=ProjectSettings.project_key==project.key)
+            return query.get()
+        else:
+            query = cls.query(ancestor=user.key)
+            return query.fetch()

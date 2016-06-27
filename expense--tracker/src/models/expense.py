@@ -33,3 +33,11 @@ class Expense(ndb.Model):
                            -Expense.last_update))
         return query.fetch()
 
+    def getAmountForUser(self, user):
+        """
+        Return the amount of the specified 'user' if 'user' is involved
+        in this Expense, otherwise return None.
+        """
+        return next((ia.amount for ia in self.individual_amount
+                               if ia.user_key == user.key), None)
+

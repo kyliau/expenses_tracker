@@ -26,7 +26,6 @@ class AppUser(ndb.Model):
     last_update   = ndb.DateTimeProperty(auto_now=True)
     creation_date = ndb.DateTimeProperty(auto_now_add=True)
     projects      = ndb.KeyProperty(kind="Project", repeated=True)
-    #settings      = ndb.StructuredProperty(Settings, repeated=True)
     user_id       = ndb.StringProperty(indexed=True)
 
     @classmethod
@@ -76,6 +75,9 @@ class AppUser(ndb.Model):
         return self.user_id is None
 
     def getAllProjects(self):
+        """
+        Return all the projects for which the user is a member of.
+        """
         return ndb.get_multi(self.projects)
 
     def addProject(self, project):
@@ -84,19 +86,17 @@ class AppUser(ndb.Model):
         """
         self.projects.append(project.key)
 
-    #def getSettingsForProject(self, project):
-    #    try:
-    #        # doing a linear search here... We might be able to do better
-    #        # with a better schema
-    #        index = self.projects.index(project.key)
-    #        return self.settings[index]
-    #    except ValueError:
-    #        # TODO: we need to log the error here
-    #        return None
-
     def deleteProject(self, project):
-        index = self.projects.index(project.key)
-        assert(index >= 0)
-        # projects and settings have the same index in the array
-        self.projects.pop(index)
-        self.settings.pop(index)
+        """
+        Delete the specified 'project' from the user list of projects.
+        Note this method is meant to delete the entire project, not to
+        remove the user from the specified 'project'. The changes is
+        not committed to the datastore. Return true if the 'project' is
+        successfully removed from the list, false otherwise.
+        """
+        try:
+            index = self.projects.index(project.key)
+            self.projects.pop(index)
+            return True
+        except ValueError:
+            return False

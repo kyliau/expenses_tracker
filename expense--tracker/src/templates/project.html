@@ -15,8 +15,8 @@
         <div class="input-group">
           <div class="input-group-addon"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></div>
           <select name="paid_by" class="form-control">
-            {% for participant in participants %}
-            <option value="{{ participant.key.urlsafe() }}" {% if participant == current_user %}selected{% endif %}>{{ participant.name }}</option>
+            {% for member in members %}
+            <option value="{{ member.key.urlsafe() }}" {% if member == current_user %}selected{% endif %}>{{ member.name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -47,14 +47,14 @@
         <div class="panel-heading">Split Among</div>
         <div class="panel-body" id="splitAmong">
           <label class="checkbox-inline"><input type="checkbox" id="splitAll" name="split_all">All</label>
-          {% for participant in participants %}
+          {% for member in members %}
           {% if loop.index % 3 == 1 %}
           <div class="row">
             {% endif %}
             <div class="col-xs-4">
-              <label class="checkbox-inline"><input type="checkbox" class="participant" id="{{ participant.key.urlsafe() }}" value="{{ participant.key.urlsafe() }}">{{ participant.name }}</label>
+              <label class="checkbox-inline"><input type="checkbox" class="participant" id="{{ member.key.urlsafe() }}" value="{{ member.key.urlsafe() }}">{{ member.name }}</label>
             </div>
-            {% if loop.index % 3 == 0 or loop.index == participants|count %}
+            {% if loop.index % 3 == 0 or loop.index == members|count %}
           </div>
           {% endif %}
           {% endfor %}
@@ -68,11 +68,11 @@
       </div>
       <!-- Individual Amount -->
       <div id="individualAmount" style="display:none">
-        {% for participant in participants %}
+        {% for member in members %}
         <div class="form-group" style="display:none">
           <div class="input-group">
-            <div class="input-group-addon"><span>{{ participant.name }}</span></div>
-            <input type="number" class="form-control" name="{{ participant.key.urlsafe() }}" placeholder="{{ participant.name }}'s Amount" min='0' step='any'>
+            <div class="input-group-addon"><span>{{ member.name }}</span></div>
+            <input type="number" class="form-control" name="{{ member.key.urlsafe() }}" placeholder="{{ member.name }}'s Amount" min='0' step='any'>
           </div>
         </div>
         {% endfor %}

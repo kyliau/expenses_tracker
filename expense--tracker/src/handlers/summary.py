@@ -23,14 +23,13 @@ class SummaryHandler(BaseHandler):
         expenses = Expense.queryByProjectKey(projectKey)
         totalPaid = 0
         totalSpent = 0
-        index = project.participants.index(appUser.key)
+
         for expense in expenses:
             isPayer = expense.paid_by == appUser.key
             if isPayer:
                 totalPaid += expense.amount
-            amount = expense.individual_amount[index].amount
-            totalSpent += amount
-            #expense.show = isPayer or amount > 0
+            amount = expense.getAmountForUser(appUser)
+            totalSpent += (0 if amount is None else amount)
 
         amountOwed = totalSpent - totalPaid        
         message = ""
@@ -40,22 +39,22 @@ class SummaryHandler(BaseHandler):
             message = "All dues are clear"
             alertType = "alert-success"
         elif amountOwed > 0:
-            message = "{} owes Auntie Terry {}".format(appUser.name, amtString)
+            message = "{} owes Auntie Terry {}".format(appUser.name,
+                                                       amtString)
         else:
             message = "Auntie Terry owes %s %s" % (appUser.name, amtString)
 
-        template = JINJA_ENVIRONMENT.get_template("templates/summary.html")
+        templateLocation = "templates/summary.html"
+        template = JINJA_ENVIRONMENT.get_template(templateLocation)
         template_values = {
             "project_key"  : projectKey.urlsafe(),
             "message"      : message,
             "alert_type"   : alertType,
-            #"current_page" : "Home",
             "logout_url"   : users.create_logout_url("/"),
-            "user_key"     : appUser.key,
+            "appUser"      : appUser,
             "expenses"     : expenses,
-            "index"        : index,
             "total_paid"   : totalPaid,
             "total_spent"  : totalSpent,
-            "id_resolver"  : project.mapIdsToUsers()
+            "id_resolver"  : {m.key:m for m in project.getMembers()}
         }
         self.response.write(template.render(template_values))

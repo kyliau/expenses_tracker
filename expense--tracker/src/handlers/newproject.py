@@ -6,6 +6,7 @@ from src.handlers.basehandler import BaseHandler
 from src.utils.jinjautil import JINJA_ENVIRONMENT
 from src.models.appuser import AppUser
 from src.models.project import Project
+from src.models.projectsettings import ProjectSettings
 from src.utils.emailutil import EmailUtil
 
 class NewProjectHandler(BaseHandler):
@@ -54,8 +55,12 @@ class NewProjectHandler(BaseHandler):
 
         for appUser in appUsers:
             appUser.addProject(project)
-        
+            
         ndb.put_multi(appUsers)
+
+        settings = [ProjectSettings.create(user, project) for 
+                    user in appUsers]
+        ndb.put_multi(settings)
 
         if notifyAllParticipants == "on":
             EmailUtil.sendNewProjectEmail(project, owner, members)

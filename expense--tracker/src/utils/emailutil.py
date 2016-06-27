@@ -60,7 +60,8 @@ class EmailUtil(object):
         # build the message body
         for member in project.getMembers():
             assert project.key in member.projects
-            settings = ProjectSettings.query(project, member)
+            settings = ProjectSettings.getSettingsByFilter(member,
+                                                           project)
             emailOption = settings.receive_email
             assert emailOption in ["all", "relevant", "none"]
             amount = individualAmount[member.key]

@@ -14,7 +14,7 @@ class RegisterHandler(webapp2.RequestHandler):
         assert user
         # need to check if user is actually registered
         appUser = AppUser.queryByUserId(user.user_id())
-        if appUser.isNew():
+        if appUser is None or appUser.isNew():
             template = JINJA_ENVIRONMENT.get_template('templates/register.html')
             self.response.write(template.render())
         else:
