@@ -3,6 +3,7 @@ from google.appengine.api import users
 from src.handlers.basehandler import BaseHandler
 from src.models.expense import Expense
 from src.utils.jinjautil import JINJA_ENVIRONMENT
+from src.utils.calculationutil import CalculationUtil as CalcUtil
 
 class SummaryHandler(BaseHandler):
     def get(self):
@@ -19,19 +20,11 @@ class SummaryHandler(BaseHandler):
         appUser = self.appUser
         if not project.isMember(appUser):
             self.abort(401)
-        
+
         expenses = Expense.queryByProject(project)
-        totalPaid = 0
-        totalSpent = 0
-
-        for expense in expenses:
-            isPayer = expense.paid_by == appUser.key
-            if isPayer:
-                totalPaid += expense.amount
-            amount = expense.getAmountForUser(appUser)
-            totalSpent += (0 if amount is None else amount)
-
-        amountOwed = totalSpent - totalPaid        
+        totalPaid, totalSpent = CalcUtil.calculateSummaryForUser(appUser,
+                                                                 expenses)
+        amountOwed = totalSpent - totalPaid
         message = ""
         alertType = "alert-info"
         amtString = "${:.2f}".format(abs(amountOwed))
@@ -42,7 +35,8 @@ class SummaryHandler(BaseHandler):
             message = "{} owes Auntie Terry {}".format(appUser.name,
                                                        amtString)
         else:
-            message = "Auntie Terry owes %s %s" % (appUser.name, amtString)
+            message = "Auntie Terry owes %s %s" % (appUser.name,
+                                                   amtString)
 
         templateLocation = "templates/summary.html"
         template = JINJA_ENVIRONMENT.get_template(templateLocation)
