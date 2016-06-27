@@ -39,7 +39,9 @@ class Project(ndb.Model):
         Return the members as 'AppUser' instances in this project.
         """
         keys = [member.user_key for member in self.members]
-        return ndb.get_multi(keys)
+        members = ndb.get_multi(keys)
+        members.sort(key=lambda m: m.name)
+        return members
 
     def isMember(self, user):
         """

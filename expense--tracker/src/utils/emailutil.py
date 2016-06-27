@@ -1,5 +1,5 @@
 from google.appengine.api import mail
-from src.models.projectsettings import ProjectSettings
+from src.models.projectsettings import ProjectSettings, EMAIL_CHOICES
 from src.utils.jinjautil import JINJA_ENVIRONMENT
 
 class EmailUtil(object):
@@ -62,8 +62,8 @@ class EmailUtil(object):
             assert project.key in member.projects
             settings = ProjectSettings.getSettingsByFilter(member,
                                                            project)
-            emailOption = settings.receive_email
-            assert emailOption in ["all", "relevant", "none"]
+            emailChoice = settings.receive_email
+            assert emailChoice in EMAIL_CHOICES
             amount = individualAmount[member.key]
             assert amount >= 0
             if amount > 0:
@@ -73,8 +73,8 @@ class EmailUtil(object):
                 })
             isPayer = (expense.paid_by == member.key)
             isInvolved = (isPayer or amount > 0)
-            isRelevant = (emailOption == "relevant" and isInvolved)
-            if emailOption == "all" or isRelevant:
+            isRelevant = (emailChoice == "relevant" and isInvolved)
+            if emailChoice == "all" or isRelevant:
                 receipients.append(member)
 
         templateLocation = "templates/newTransactionEmail.html"
