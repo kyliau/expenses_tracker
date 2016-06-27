@@ -18,9 +18,8 @@ class AjaxHandler(BaseHandler):
         project = expenseKey.parent().get()
         if not project:
             self.response.write("Request is invalid")
-        #user = users.get_current_user()
-        #appUser = ettypes.AppUser.queryByUserId(user.user_id())
-        if self.appUser.key not in project.moderators:
+        if project.isAdmin(self.appUser):
+            expenseKey.delete()
+            self.response.write("Deleted " + expense.details)
+        else:
             self.abort(401, detail="User is not authorized")
-        expenseKey.delete()
-        self.response.write("Deleted " + expense.details)

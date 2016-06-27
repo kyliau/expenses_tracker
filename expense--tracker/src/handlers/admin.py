@@ -3,6 +3,7 @@ from google.appengine.api import users
 from src.handlers.basehandler import BaseHandler
 from src.models.expense import Expense
 from src.utils.jinjautil import JINJA_ENVIRONMENT
+from src.utils.calculationutil import CalculationUtil as CalcUtil
 
 class AdminHandler(BaseHandler):
     def get(self):
@@ -26,7 +27,9 @@ class AdminHandler(BaseHandler):
             "members"      : members,
             "expenses"     : expenses,
             "id_resolver"  : {m.key:m for m in members},
-            "is_admin"     : project.isAdmin(appUser)
+            "is_admin"     : project.isAdmin(appUser),
+            "summary" : CalcUtil.calculateSummaryForAll(members,
+                                                        expenses)
         }
         self.response.write(template.render(template_values))
 
