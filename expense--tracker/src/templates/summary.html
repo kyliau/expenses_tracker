@@ -9,7 +9,7 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>#</th>    
+          <th>#</th>
           <th>Date</th>
           <th>Details</th>
           <th>Paid By</th>
@@ -18,9 +18,8 @@
         </tr>
       </thead>
       <tbody>
-        {% for expense in expenses %}
-        {% set amount = expense.getAmountForUser(appUser) %}
-          {% if expense.paid_by == appUser.key or amount > 0 %}
+        {% for expense in expenses if expense.paid_by == appUser.key or expense.getAmountForUser(appUser) > 0 %}
+        {% set amount=expense.getAmountForUser(appUser) %}
         <tr>
           <th scope="row">{{ loop.index }}</th>
           <td>{{ expense.transaction_date.strftime('%Y-%m-%d') }}</td>
@@ -29,7 +28,6 @@
           <td>{% if expense.paid_by == appUser.key %}{{ "${:.2f}".format(expense.amount) }}{% endif %}</td>
           <td>{% if amount > 0 %}{{ "${:.2f}".format(amount) }}{% endif %}</td>
         </tr>
-          {% endif %}
         {% endfor %}
       </tbody>
       <tfoot>
