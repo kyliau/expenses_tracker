@@ -36,7 +36,8 @@ class Project(ndb.Model):
 
     def getMembers(self):
         """
-        Return the members as 'AppUser' instances in this project.
+        Return the members in this project as 'AppUser' instances.
+        This list is sorted by name of the user.
         """
         keys = [member.user_key for member in self.members]
         members = ndb.get_multi(keys)

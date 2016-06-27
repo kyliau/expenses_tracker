@@ -20,7 +20,7 @@ class SummaryHandler(BaseHandler):
         if not project.isMember(appUser):
             self.abort(401)
         
-        expenses = Expense.queryByProjectKey(projectKey)
+        expenses = Expense.queryByProject(project)
         totalPaid = 0
         totalSpent = 0
 

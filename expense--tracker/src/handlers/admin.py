@@ -17,13 +17,13 @@ class AdminHandler(BaseHandler):
         if not project.isMember(appUser):
             self.abort(401)
         members = project.getMembers()
-        expenses = Expense.queryByProjectKey(projectKey)
+        expenses = Expense.queryByProject(project)
         template = JINJA_ENVIRONMENT.get_template("templates/admin.html")
         template_values = {
             "current_page" : "Admin",
             "project_key"  : projectKey.urlsafe(),
             "logout_url"   : users.create_logout_url("/"),
-            "members" : members,
+            "members"      : members,
             "expenses"     : expenses,
             "id_resolver"  : {m.key:m for m in members},
             "is_admin"     : project.isAdmin(appUser)
@@ -39,16 +39,13 @@ class AdminHandler(BaseHandler):
         project = projectKey.get()
         if not project:
             self.response.write("Request is invalid")
-        # need to make sure the request to delete the project originates from
-        # the project owner
         appUser = self.appUser
-        #user = users.get_current_user()
-        #appUser = ettypes.AppUser.queryByUserId(user.user_id())
+        # only owner is allowed to delete project
         if appUser.key != project.owner:
             # log error message here
             return self.abort(401,
                               detail="User is not authorized to delete project")
-        # TODO: Also need to delete the key from each participant"s profile
+        # TODO: Also need to delete the key from each member's profile
         # That means we need to make this a transaction
         members = project.getMembers()
         for member in members:

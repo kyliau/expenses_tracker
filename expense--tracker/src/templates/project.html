@@ -1,7 +1,7 @@
 {% extends "templates/base.html" %}
 {% block navbar %}
 <li><a href="/summary?id={{project.key.urlsafe()}}">Summary</a></li>
-<li><a href="/admin?id={{project.key.urlsafe()}}">Admin</a></li>
+<li><a href="/admin?id={{project.key.urlsafe()}}">Details</a></li>
 {% endblock %}
 {% block container %}
 <div class="panel panel-default">

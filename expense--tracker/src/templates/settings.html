@@ -39,7 +39,7 @@
               <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="all" {% if frequency == "all" %}checked{% endif %}> All transactions</label>
             </div>
             <div class="radio">
-              <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="relevant" {% if frequency == "relevant" %}checked{% endif %}> Only transactions that involve me</label>
+              <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="relevant" {% if frequency == "relevant" %}checked{% endif %}> Relevant transactions only</label>
             </div>
             <div class="radio">
               <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="none" {% if frequency == "none" %}checked{% endif %}> Never</label>

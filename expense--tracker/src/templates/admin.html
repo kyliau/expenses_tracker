@@ -1,10 +1,10 @@
 {% extends "templates/base.html" %}
 {% block navbar %}
 <li><a href="/summary?id={{project_key}}">Summary</a></li>
-<li class="active"><a href="/admin?id={{project_key}}">Admin</a></li>
+<li class="active"><a href="/admin?id={{project_key}}">Details</a></li>
 {% endblock %}
 {% block container %}
-{% if is_admin %}
+{% if is_admin and False %}
 <div>
   <form action="/admin" method="post">
     <button type="submit" class="btn btn-danger pull-right" id="delete-project">Delete Project</button>

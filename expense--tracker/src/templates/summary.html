@@ -1,7 +1,7 @@
 {% extends "templates/base.html" %}
 {% block navbar %}
 <li class="active"><a href="/summary?id={{project_key}}">Summary</a></li>
-<li><a href="/admin?id={{project_key}}">Admin</a></li>
+<li><a href="/admin?id={{project_key}}">Details</a></li>
 {% endblock %}
 {% block container %}
   <div class="alert {{ alert_type }} text-center h3" role="alert" >{{ message }}</div>
