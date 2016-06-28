@@ -15,7 +15,8 @@ class RegisterHandler(webapp2.RequestHandler):
         # need to check if user is actually registered
         appUser = AppUser.queryByUserId(user.user_id())
         if appUser is None or appUser.isNew():
-            template = JINJA_ENVIRONMENT.get_template('templates/register.html')
+            template_location = "templates/register.html"
+            template = JINJA_ENVIRONMENT.get_template(template_location)
             self.response.write(template.render())
         else:
             self.redirect("/home")

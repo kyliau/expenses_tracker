@@ -2,6 +2,8 @@ from google.appengine.api import mail
 from src.models.projectsettings import ProjectSettings, EMAIL_CHOICES
 from src.utils.jinjautil import JINJA_ENVIRONMENT
 
+SENDER = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
+
 class EmailUtil(object):
     """Namespace for functions that handles email"""
 
@@ -11,14 +13,13 @@ class EmailUtil(object):
         Send a notification email to the specified 'members' of the
         new 'project' created by 'owner'.
         """
-
         template_values = {
             "owner"        : owner.name,
             "project_name" : project.name,
             "project_id"   : project.key.urlsafe()
         }
         message = mail.EmailMessage()
-        message.sender = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
+        message.sender = SENDER
         subject = "[Expense Tracker] {} added you to project {}!"
         message.subject = subject.format(owner.name, project.name)
         template_location = "templates/newProjectEmail.html"
@@ -36,9 +37,13 @@ class EmailUtil(object):
 
     @staticmethod
     def sendNewTransactionEmail(project, expense):
+        """
+        Send an email to all relevant members in the specified 'project'
+        for the specified 'expense'.
+        """
         paidBy = expense.paid_by.get()
         message = mail.EmailMessage()
-        message.sender = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
+        message.sender = SENDER
         subject = "[{}] {} paid ${:.2f} for {}"
         message.subject = subject.format(project.name,
                                          paidBy.name,
