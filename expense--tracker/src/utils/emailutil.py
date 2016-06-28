@@ -54,7 +54,7 @@ class EmailUtil(object):
             'splits' : []
         }
 
-        individualAmount = {ia.user_key:ia.amount for 
+        individualAmount = {ia.user_key:ia.amount for
                             ia in expense.individual_amount}
         receipients = []
         # build the message body
@@ -77,8 +77,8 @@ class EmailUtil(object):
             if emailChoice == "all" or isRelevant:
                 receipients.append(member)
 
-        templateLocation = "templates/newTransactionEmail.html"
-        template = JINJA_ENVIRONMENT.get_template(templateLocation)
+        template_location = "templates/newTransactionEmail.html"
+        template = JINJA_ENVIRONMENT.get_template(template_location)
         message.body = template.render(template_values)
         for user in receipients:
             message.to = "{} <{}>".format(user.name, user.email)
