@@ -5,6 +5,9 @@ from src.models.projectsettings import ProjectSettings, EMAIL_CHOICES
 
 class SettingsHandler(BaseHandler):
     def get(self):
+        """
+        Show the settings page for all projects.
+        """
         appUser = self.appUser
         templateLocation = "templates/settings.html"
         template = JINJA_ENVIRONMENT.get_template(templateLocation)
@@ -18,12 +21,15 @@ class SettingsHandler(BaseHandler):
         self.response.write(template.render(template_values))
 
     def post(self):
+        """
+        Update user email settings for all projects.
+        """
         appUser = self.appUser
         for project in appUser.getAllProjects():
-            emailOption = self.request.get(project.urlsafe() + "_email")
+            emailOption = self.request.get(project.key.urlsafe() + "_email")
             settings = ProjectSettings.getSettingsByFilter(appUser,
                                                            project)
-            if (emailOption in EMAIL_CHOICES and 
+            if (emailOption in EMAIL_CHOICES and
                 emailOption != settings.receive_email):
                 settings.receive_email = emailOption
                 settings.put()

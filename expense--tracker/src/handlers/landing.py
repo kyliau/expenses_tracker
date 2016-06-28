@@ -15,7 +15,8 @@ class MainPage(webapp2.RequestHandler):
         else:
             url = users.create_login_url(self.request.uri)
             template_values = { "url" : url }
-            template = JINJA_ENVIRONMENT.get_template("templates/index.html")
+            template_location = "templates/landing.html"
+            template = JINJA_ENVIRONMENT.get_template(template_location)
             self.response.write(template.render(template_values))
 
 app = webapp2.WSGIApplication([
