@@ -4,6 +4,13 @@ from src.models.appuser import AppUser
 from src.utils.jinjautil import JINJA_ENVIRONMENT
 
 class MainPage(webapp2.RequestHandler):
+    """
+    Show the landing page. No login is required for this page.
+    If user has given permission for Expense Tracker to access their
+    email address then this page would redirect user to the
+    registration page. If user has already registered then user will
+    be redirected to the user homepage.
+    """
     def get(self):
         user = users.get_current_user()
         if user:
