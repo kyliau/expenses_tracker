@@ -45,14 +45,14 @@ class EmailUtil(object):
                                          expense.amount,
                                          expense.details)
         template_values = {
-            'project_name' : project.name,
-            'payer'        : paidBy.name,
-            'expense'      : {
-                'transaction_date' : expense.transaction_date,
-                'amount'           : expense.amount,
-                'details'          : expense.details
+            "project_name" : project.name,
+            "payer"        : paidBy.name,
+            "expense"      : {
+                "transaction_date" : expense.transaction_date,
+                "amount"           : expense.amount,
+                "details"          : expense.details
             },
-            'splits' : []
+            "splits" : []
         }
 
         individualAmount = {ia.user_key:ia.amount for
