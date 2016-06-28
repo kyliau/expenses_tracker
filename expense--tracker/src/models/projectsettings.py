@@ -27,16 +27,19 @@ class ProjectSettings(ndb.Model):
         )
 
     @classmethod
-    def getSettingsByFilter(cls, user, project=None):
+    def getUserSettings(cls, user):
         """
-        Return the ProjectSettings that matches the specified 'user' and
-        'project' if 'project' is defined. Otherwise return the list of
-        ProjectSettings for the specified 'user'.
+        Return all ProjectSettings for the specified 'user'.
         """
-        if project:
-            query = cls.query(ancestor=user.key,
-                              filters=ProjectSettings.project_key==project.key)
-            return query.get()
-        else:
-            query = cls.query(ancestor=user.key)
-            return query.fetch()
+        query = cls.query(ancestor=user.key)
+        return query.fetch()
+
+    @classmethod
+    def getUserSettingsForProject(cls, user, project):
+        """
+        Return the ProjectSettings for the specified 'user' and
+        'project'. Return None if it does not exist.
+        """
+        query = cls.query(ancestor=user.key,
+                          filters=ProjectSettings.project_key==project.key)
+        return query.get()

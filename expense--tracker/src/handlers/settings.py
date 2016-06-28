@@ -15,7 +15,7 @@ class SettingsHandler(BaseHandler):
             "current_page" : "Settings",
             "logout_url"   : users.create_logout_url('/'),
             "projects"     : appUser.getAllProjects(),
-            "settings"     : ProjectSettings.getSettingsByFilter(appUser),
+            "settings"     : ProjectSettings.getUserSettings(appUser),
             "app_user"     : appUser
         }
         self.response.write(template.render(template_values))
@@ -26,11 +26,11 @@ class SettingsHandler(BaseHandler):
         """
         appUser = self.appUser
         for project in appUser.getAllProjects():
-            emailOption = self.request.get(project.key.urlsafe() + "_email")
-            settings = ProjectSettings.getSettingsByFilter(appUser,
-                                                           project)
-            if (emailOption in EMAIL_CHOICES and
-                emailOption != settings.receive_email):
-                settings.receive_email = emailOption
+            newChoice = self.request.get(project.key.urlsafe() + "_email")
+            settings = ProjectSettings.getUserSettingsForProject(appUser,
+                                                                 project)
+            existingChoice = settings.receive_email
+            if (newChoice in EMAIL_CHOICES and newChoice != existingChoice):
+                settings.receive_email = newChoice
                 settings.put()
         self.response.write("Success! Your settings have been updated.")
