@@ -21,7 +21,8 @@ class EmailUtil(object):
         message.sender = "Expense Tracker <admin@expense--tracker.appspotmail.com>"
         subject = "[Expense Tracker] {} added you to project {}!"
         message.subject = subject.format(owner.name, project.name)
-        template = JINJA_ENVIRONMENT.get_template('templates/newProjectEmail.html')
+        template_location = "templates/newProjectEmail.html"
+        template = JINJA_ENVIRONMENT.get_template(template_location)
 
         for member in members:
             #if participant is owner:
@@ -79,9 +80,8 @@ class EmailUtil(object):
 
         template_location = "templates/newTransactionEmail.html"
         template = JINJA_ENVIRONMENT.get_template(template_location)
-        message.body = template.render(template_values)
+        message.html = template.render(template_values)
         for user in receipients:
             message.to = "{} <{}>".format(user.name, user.email)
-            #message.html = "<pre>{}</pre>".format(body)
             message.send()
 
