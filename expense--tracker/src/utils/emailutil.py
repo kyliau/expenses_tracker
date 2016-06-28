@@ -78,6 +78,10 @@ class EmailUtil(object):
             if emailChoice == "all" or isRelevant:
                 receipients.append(member)
 
+        maxLen = max([len(s["name"]) for s in template_values["splits"]])
+        for s in template_values["splits"]:
+            s["name"] = s["name"] + " "*(maxLen - len(s["name"]))
+
         template_location = "templates/newTransactionEmail.html"
         template = JINJA_ENVIRONMENT.get_template(template_location)
         message.html = template.render(template_values)
