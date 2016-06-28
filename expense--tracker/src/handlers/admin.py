@@ -6,7 +6,14 @@ from src.utils.jinjautil import JINJA_ENVIRONMENT
 from src.utils.calculationutil import CalculationUtil as CalcUtil
 
 class AdminHandler(BaseHandler):
+    """
+    Handler for the admin page.
+    """
     def get(self):
+        """
+        Show the admin page which has a summary of all users and all
+        expenses of a project.
+        """
         projectId = self.request.get("id")
         if not projectId:
             return self.redirect("/home")
@@ -19,7 +26,8 @@ class AdminHandler(BaseHandler):
             self.abort(401)
         members = project.getMembers()
         expenses = Expense.queryByProject(project)
-        template = JINJA_ENVIRONMENT.get_template("templates/admin.html")
+        template_location = "templates/admin.html"
+        template = JINJA_ENVIRONMENT.get_template(template_location)
         template_values = {
             "current_page" : "Admin",
             "project_key"  : projectKey.urlsafe(),
@@ -35,6 +43,9 @@ class AdminHandler(BaseHandler):
 
     # TODO: need to make this into a transaction
     def post(self):
+        """
+        Handles the request to delete a project.
+        """
         projectId = self.request.get("project_to_delete")
         if not projectId:
             return self.response.write("Request is invalid")

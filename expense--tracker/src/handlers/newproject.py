@@ -10,10 +10,13 @@ from src.models.projectsettings import ProjectSettings
 from src.utils.emailutil import EmailUtil
 
 class NewProjectHandler(BaseHandler):
+    """
+    Handles the new project creation page.
+    """
     def get(self):
         """
         Return the new project page
-        """ 
+        """
         template = JINJA_ENVIRONMENT.get_template("templates/newproject.html")
         template_values = {
             "current_page" : "Home",
@@ -24,6 +27,7 @@ class NewProjectHandler(BaseHandler):
     #@ndb.transactional
     def post(self):
         """
+        Handle the create project operation.
         """
         # TODO: data validation
         projectName = self.request.get("project_name", "My Project")
@@ -37,14 +41,14 @@ class NewProjectHandler(BaseHandler):
             "email"   : owner.email,
             "isAdmin" : True
         })
-        
+
         # need to make sure the list is unique
         # instead of overriding participants we should throw an error
         #participants = {p["email"]:p for p in participants}.values()
 
         appUsers = [AppUser.create(m["email"]) for m in members]
         ndb.put_multi(appUsers)
-        
+
         for member, appUser in zip(members, appUsers):
             member["key"]   = appUser.key
             member["name"]  = appUser.name
@@ -55,16 +59,16 @@ class NewProjectHandler(BaseHandler):
 
         for appUser in appUsers:
             appUser.addProject(project)
-            
+
         ndb.put_multi(appUsers)
 
-        settings = [ProjectSettings.create(user, project) for 
+        settings = [ProjectSettings.create(user, project) for
                     user in appUsers]
         ndb.put_multi(settings)
 
         if notifyAllParticipants == "on":
             EmailUtil.sendNewProjectEmail(project, owner, members)
-        
+
         query_params = {
             "id" : project.key.urlsafe()
         }

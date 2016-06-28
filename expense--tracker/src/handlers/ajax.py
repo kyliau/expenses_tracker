@@ -3,8 +3,14 @@ from src.handlers.basehandler import BaseHandler
 
 # This class handles all ajax requests
 class AjaxHandler(BaseHandler):
-    # This handles the delete transaction request
+    """
+    Handles all AJAX requests.
+    """
+
     def post(self):
+        """
+        Handles the delete expense / transaction request.
+        """
         expenseId = self.request.get("to_delete")
         if not expenseId:
             # TODO: Consider abort with an error code here
