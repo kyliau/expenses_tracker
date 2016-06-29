@@ -65,7 +65,7 @@ class AppUser(ndb.Model):
                 name = email.lower().split("@")[0]
             return cls(parent=APPUSER_PARENT_KEY,
                        name=name,
-                       email=email)
+                       email=email.lower())
 
     def isNew(self):
         """
