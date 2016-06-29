@@ -57,12 +57,12 @@ class AppUser(ndb.Model):
         Note that this method does not commit the new instance to the
         datastore.
         """
-        existingUser = cls.queryByEmail(email)
+        existingUser = cls.queryByEmail(email.lower())
         if existingUser:
             return existingUser
         else:
             if name is None:
-                name = email.split("@")[0]
+                name = email.lower().split("@")[0]
             return cls(parent=APPUSER_PARENT_KEY,
                        name=name,
                        email=email)

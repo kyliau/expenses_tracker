@@ -123,7 +123,10 @@ class EmailUtil(object):
             to_email = Email(email=recipient.email,
                              name=recipient.name)
             mail = Mail(SENDER, subject, to_email, content)
-            response = SG.client.mail.send.post(request_body=mail.get())
+            try:
+                response = SG.client.mail.send.post(request_body=mail.get())
+            except:
+                pass
             #print(response.status_code)
             #print(response.body)
             #print(response.headers)
