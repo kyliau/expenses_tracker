@@ -107,7 +107,7 @@ $(document).ready(function() {
                     sum += amount;
                 }
             });
-            if (sum !== total) {
+            if (Math.abs(sum - total) > 0.01) {
                 alert("Amount does not tally");
                 event.preventDefault();
             }
