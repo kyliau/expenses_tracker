@@ -103,10 +103,17 @@ $(document).ready(function() {
             calculateSplit();
         } else {
             var sum = 0;
-            $("#individualAmount input").each(function() {
-                var amount = parseFloat(this.value);
-                if (!isNaN(amount)) {
+            $(".participant").each(function() {
+                var inputElem = $("input[name=" + this.value + "]");
+                if (this.checked) {
+                    var val = inputElem.val();
+                    var amount = parseFloat(inputElem.val());
+                    if (isNaN(amount)) {
+                        throw new Error("Invalid amount: " + val);
+                    }
                     sum += amount;
+                } else {
+                    inputElem.val(0);
                 }
             });
             if (Math.abs(sum - total) > 0.01) {

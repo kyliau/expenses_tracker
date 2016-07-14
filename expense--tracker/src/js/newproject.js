@@ -16,7 +16,6 @@ $(document).ready(function() {
         renumberRows();
     });
     $("form").submit(function() {
-        //e.preventDefault();
         var participants = [];
         $("input[type=email]").each(function() {
             var email = this.value.trim();
