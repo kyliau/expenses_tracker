@@ -5,18 +5,17 @@ api_version: 1
 threadsafe: true
 
 handlers:
-- url: /favicon\.ico
-  static_files: favicon.ico
-  upload: favicon\.ico
-
 - url: /bootstrap
-  static_dir: bootstrap
+  static_dir: src/bootstrap
 
+- url: /js
+  static_dir: src/js
+  
 - url: /
-  script: home.app
+  script: src.handlers.landing.app
 
 - url: /.*
-  script: example.app
+  script: src.handlers.main.app
   login: required
 
 libraries:

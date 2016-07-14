@@ -1,0 +1,60 @@
+{% extends "templates/base.html" %}
+{% block container %}
+<h3>Settings</h3>
+<div class="alert alert-success" role="alert" style="display:none"></div>
+<div class="alert alert-danger" role="alert" style="display:none">Something went wrong... Please try again later.</div>
+
+<div class="input-group disabled">
+  <span class="input-group-addon">Name</span>
+  <input type="text" class="form-control" placeholder="Name" value="{{app_user.name}}" disabled>
+</div>
+<br>
+<div class="input-group disabled">
+  <span class="input-group-addon">Email</span>
+  <input type="email" class="form-control" placeholder="Email" value="{{app_user.email}}" disabled>
+</div>
+<br>
+
+<div>
+  <form id="project-settings" method="post">
+
+    {% if projects|count > 0 %}
+    <p>How often do you want to get notified when a new transaction is added to one of your projects?</p>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Project</th>
+          <th>Receive Emails</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+        {% set frequency = settings[loop.index0].receive_email %}
+        <tr>
+          <td>{{loop.index}}</td>
+          <td>{{project.name}}</td>
+          <td>
+            <div class="radio">
+              <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="all" {% if frequency == "all" %}checked{% endif %}> All transactions</label>
+            </div>
+            <div class="radio">
+              <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="relevant" {% if frequency == "relevant" %}checked{% endif %}> Relevant transactions only</label>
+            </div>
+            <div class="radio">
+              <label class="checkbox-inline"><input type="radio" name="{{project.key.urlsafe() ~ '_email'}}" value="none" {% if frequency == "none" %}checked{% endif %}> Never</label>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+    <button type="submit" class="btn btn-default" disabled>Save Settings</button>
+  </form>
+</div>
+{% endblock %}
+{% block javascript %}
+<script src="js/settings.js"></script>
+{% endblock %}
+{# vim:set tabstop=2 shiftwidth=2 softtabstop=2 expandtab: #}

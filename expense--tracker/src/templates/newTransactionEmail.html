@@ -1,0 +1,19 @@
+<html>
+<head></head>
+<body>
+<pre style="font-size:14px">
+Project : {{ project_name                     }}
+Date    : {{ expense.transaction_date         }}
+Amount  : {{ "${:.2f}".format(expense.amount) }}
+Details : {{ expense.details                  }}
+Paid By : {{ payer                            }}
+Split with :
+{%- for split in splits %}
+    {{ split.name }} : {{ "${:.2f}".format(split.amount) }}
+{%- endfor %}
+
+
+To unsubscribe please click <a href="https://expense--tracker.appspot.com/settings">here</a>.
+</pre>
+</body>
+</html>
