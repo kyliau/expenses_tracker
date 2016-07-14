@@ -18,7 +18,7 @@ $(document).ready(function() {
             initialData = currentData;
             success.text(response).slideDown();
         })
-        .fail(function(response) {
+        .fail(function() {
             failure.slideDown();
         });
         e.preventDefault();

@@ -2,36 +2,34 @@ function renumberRows() {
     $("tbody th").each(function(index) {
         $(this).text(index);
     });
-};
+}
 
 $(document).ready(function() {
-    $('#addrow').click(function(e) {
+    $("#addrow").click(function() {
         $("#template-row").clone(true)
                           .removeClass("hidden")
                           .appendTo("tbody");
         renumberRows();
     });
-    $('.glyphicon-remove').click(function(e) {
-        $(this).closest('tr').remove();
+    $(".glyphicon-remove").click(function() {
+        $(this).closest("tr").remove();
         renumberRows();
     });
-    $('form').submit(function(e) {
-        //e.preventDefault();
+    $("form").submit(function() {
         var participants = [];
-        $('input[type=email]').each(function() {
+        $("input[type=email]").each(function() {
             var email = this.value.trim();
-            var isAdmin = $(this).closest('td')
+            var isAdmin = $(this).closest("td")
                                  .next()
                                  .children()
-                                 .is(':checked');
+                                 .is(":checked");
             if (email) {
                 participants.push({
                     email   : email,
-                    isAdmin : isAdmin,
+                    isAdmin : isAdmin
                 });
             }
         });
-        console.log(JSON.stringify(participants));
-        $('input[name=participants]').val(JSON.stringify(participants));
+        $("input[name=participants]").val(JSON.stringify(participants));
     });
 });
