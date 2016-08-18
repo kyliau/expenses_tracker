@@ -43,8 +43,7 @@ class NewProjectHandler(BaseHandler):
         })
 
         # need to make sure the list is unique
-        # instead of overriding participants we should throw an error
-        #participants = {p["email"]:p for p in participants}.values()
+        members = {m["email"].lower():m for m in members}.values()
 
         appUsers = [AppUser.create(m["email"]) for m in members]
         ndb.put_multi(appUsers)

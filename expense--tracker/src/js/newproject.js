@@ -18,7 +18,7 @@ $(document).ready(function() {
     $("form").submit(function() {
         var participants = [];
         $("input[type=email]").each(function() {
-            var email = this.value.trim();
+            var email = this.value.trim().toLowerCase();
             var isAdmin = $(this).closest("td")
                                  .next()
                                  .children()

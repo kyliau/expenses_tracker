@@ -4,7 +4,7 @@
 <li class="active"><a href="/admin?id={{project_key}}">Details</a></li>
 {% endblock %}
 {% block container %}
-{% if is_admin and False %}
+{% if is_admin %}
 <div>
   <form action="/admin" method="post">
     <button type="submit" class="btn btn-danger pull-right" id="delete-project">Delete Project</button>
