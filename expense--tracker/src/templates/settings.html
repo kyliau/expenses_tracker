@@ -4,19 +4,19 @@
 <div class="alert alert-success" role="alert" style="display:none"></div>
 <div class="alert alert-danger" role="alert" style="display:none">Something went wrong... Please try again later.</div>
 
-<div class="input-group disabled">
-  <span class="input-group-addon">Name</span>
-  <input type="text" class="form-control" placeholder="Name" value="{{app_user.name}}" disabled>
-</div>
-<br>
-<div class="input-group disabled">
-  <span class="input-group-addon">Email</span>
-  <input type="email" class="form-control" placeholder="Email" value="{{app_user.email}}" disabled>
-</div>
-<br>
-
 <div>
   <form id="project-settings" method="post">
+
+    <div class="input-group">
+      <span class="input-group-addon">Name</span>
+      <input name="name" type="text" class="form-control" placeholder="Name" value="{{app_user.name}}">
+    </div>
+    <br>
+    <div class="input-group disabled">
+      <span class="input-group-addon">Email</span>
+      <input type="email" class="form-control" placeholder="Email" value="{{app_user.email}}" disabled>
+    </div>
+    <br>
 
     {% if projects|count > 0 %}
     <p>How often do you want to get notified when a new transaction is added to one of your projects?</p>

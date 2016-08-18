@@ -33,4 +33,10 @@ class SettingsHandler(BaseHandler):
             if (newChoice in EMAIL_CHOICES and newChoice != existingChoice):
                 settings.receive_email = newChoice
                 settings.put()
+
+        newName = self.request.get("name").strip()
+        if newName and newName != appUser.name:
+            appUser.name = newName
+            appUser.put()
+
         self.response.write("Success! Your settings have been updated.")
