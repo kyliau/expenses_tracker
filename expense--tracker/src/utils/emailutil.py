@@ -42,13 +42,12 @@ def determineRecipients(project, members, individualAmount, payer):
     """
     recipients = []
     for member in members:
-        settings = ProjectSettings.getUserSettingsForProject(member,
-                                                             project)
-        isPayer = (payer.key == member.key)
-        amount = individualAmount[member.key]
-        isInvolved = (isPayer or amount > 0)
+        settings    = ProjectSettings.getUserSettingsForProject(member, project)
+        isPayer     = (payer.key == member.key)
+        amount      = individualAmount[member.key]
+        isInvolved  = (isPayer or amount > 0)
         emailChoice = settings.receive_email
-        isRelevant = (emailChoice == "relevant" and isInvolved)
+        isRelevant  = (emailChoice == "relevant" and isInvolved)
         if emailChoice == "all" or isRelevant:
             recipients.append(member)
     return recipients

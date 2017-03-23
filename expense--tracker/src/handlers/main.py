@@ -20,4 +20,4 @@ app = webapp2.WSGIApplication([
     ("/admin", AdminHandler),
     ("/settings", SettingsHandler),
     ("/request", AjaxHandler)
-], debug=True)
+], debug=False)
